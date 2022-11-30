@@ -1,0 +1,54 @@
+App :
+   Size - 680x640
+   Title - Asteroids!
+   Icon?
+   Fullscreen/resize disallowed, close closes the app
+
+Main Menu :
+   New Game - starts the game
+   Highscores - new scene? - max 10, uses a text file highscores
+	Contains rank-name-score-date
+    Can be reset with a button
+   Settings - new scene? - uses a text file gamesettings.properties
+	An editable table, setting name - value
+	Difficulty/game speed?
+	Pause with "p", it stops the game and displays some indication that it is paused, second "p" continues the game
+   	Back/Exit - pause and confirmation dialog? with "esc", then back to main menu/return to game 
+   	Restart - "R", same as above
+    Shoot with "space"
+   	Turn with left/right
+   	Accelerate/Decelerate with up/down
+   Help? display game rules/help
+   Exit - closes app
+   Highlight choice 
+  
+
+Game :
+   Status bar at the top
+   	lifes, score, instruction
+   
+   
+   
+Class Design
+
+
+Common parent of ship/saucers/asteriod/projectile - AnimatedObject
+	position
+	turn rate?
+		
+	direction
+	speed
+
+	turn
+	move
+	accelerate/decelerate?
+	setPosition?
+	collision
+
+Projectile 
+	needs to disappear after some time - lifetime?
+	needs to disappear on hit
+
+
+
+
