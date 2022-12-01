@@ -55,36 +55,20 @@ public class OmegaApp extends Application {
 	} // start
 	
 	private void initMainMenu() {
-		
-		Text newGame = new Text("NEW GAME");
-	    newGame.setFill(Color.WHITE);
-	    newGame.setFont(F40);
-	    newGame.setOnMouseEntered(event -> newGame.setFill(Color.RED));
-	    newGame.setOnMouseExited(event -> newGame.setFill(Color.WHITE));
-	    
-	    Text highScore = new Text("HIGH SCORES");
-	    highScore.setFill(Color.WHITE);
-	    highScore.setFont(F40);
-	    highScore.setOnMouseEntered(event -> highScore.setFill(Color.RED));
-	    highScore.setOnMouseExited(event -> highScore.setFill(Color.WHITE)); 
-	    
-	    Text settings = new Text("SETTINGS");
-	    settings.setFill(Color.WHITE);
-	    settings.setFont(F40);
-	    settings.setOnMouseEntered(event -> settings.setFill(Color.RED));
-	    settings.setOnMouseExited(event -> settings.setFill(Color.WHITE)); 
-	    
-	    Text help = new Text("HELP");
-	    help.setFill(Color.WHITE);
-	    help.setFont(F40);
-	    help.setOnMouseEntered(event -> help.setFill(Color.RED));
-	    help.setOnMouseExited(event -> help.setFill(Color.WHITE)); 
-	    
-	    Text exit = new Text("EXIT");
-	    exit.setFill(Color.WHITE);
-	    exit.setFont(F40);
-	    exit.setOnMouseEntered(event -> exit.setFill(Color.RED));
-	    exit.setOnMouseExited(event -> exit.setFill(Color.WHITE));
+		// Menu item that start a new game
+		Text newGame = getMainMenuItem("NEW GAME");
+		newGame.setOnMouseClicked(event -> System.out.println("unimplemented"));
+	    // Menu item that displays high scores
+	    Text highScore = getMainMenuItem("HIGH SCORES");
+	    highScore.setOnMouseClicked(event -> System.out.println("unimplemented"));
+	    // Menu item that displays settings
+	    Text settings = getMainMenuItem("SETTINGS");
+	    settings.setOnMouseClicked(event -> System.out.println("unimplemented"));
+	    // Menu item that displays help
+	    Text help = getMainMenuItem("HELP");
+	    help.setOnMouseClicked(event -> System.out.println("unimplemented"));
+	    // Menu item that exits the application
+	    Text exit = getMainMenuItem("EXIT");
 	    exit.setOnMouseClicked(event -> { 
 	    	Node source = (Node)event.getSource();
 	    	Stage window = (Stage)source.getScene().getWindow();
@@ -101,6 +85,15 @@ public class OmegaApp extends Application {
 		
         mainMenu = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
         mainMenu.setFill(Color.BLACK);
+	}
+	
+	private Text getMainMenuItem(String text) {
+		Text item = new Text(text);
+		item.setFill(Color.WHITE);
+		item.setFont(F40);
+		item.setOnMouseEntered(event -> item.setFill(Color.RED));
+		item.setOnMouseExited(event -> item.setFill(Color.WHITE));
+	    return item;
 	}
 
 } // OmegaApp
