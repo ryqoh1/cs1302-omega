@@ -14,14 +14,16 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
- * REPLACE WITH NON-SHOUTING DESCRIPTION OF YOUR APP.
+ * Implementation of the classic arcade game Asteroids!.
+ * <p>
+ * @see <a href="https://en.wikipedia.org/wiki/Asteroids_(video_game)">Wikipedia</a> 
  */
 public class OmegaApp extends Application {
 	
-	static final int SCENE_WIDTH = 680;
-	static final int SCENE_HEIGHT = 640;
+	public static final int SCENE_WIDTH = 680;
+	public static final int SCENE_HEIGHT = 640;
 	
-	static final Font F40 = Font.font("C059", FontWeight.MEDIUM, 40);
+	public static final Font F40 = Font.font("C059", FontWeight.MEDIUM, 40);
 	
 	Scene mainMenu;
 	
@@ -54,6 +56,9 @@ public class OmegaApp extends Application {
 		Platform.runLater(() -> stage.setResizable(false));
 	} // start
 	
+	/**
+	 * Initializes the main menu screen.
+	 */
 	private void initMainMenu() {
 		// Menu item that start a new game
 		Text newGame = getMainMenuItem("NEW GAME");
@@ -87,6 +92,12 @@ public class OmegaApp extends Application {
         mainMenu.setFill(Color.BLACK);
 	}
 	
+	/**
+	 * Creates and returns a basic main menu item.
+	 * 
+	 * @param text - the text to be displayed 
+	 * @return the menu item
+	 */
 	private Text getMainMenuItem(String text) {
 		Text item = new Text(text);
 		item.setFill(Color.WHITE);
