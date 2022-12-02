@@ -16,7 +16,7 @@ public class DemoGame extends Game {
 
     private Random rng;       // random number generator
     private Rectangle player; // some rectangle to represent the player
-    private IdleCat cat;      // the not so idle cat (see IdleCat.java)
+
 
     /**
      * Construct a {@code DemoGame} object.
@@ -28,21 +28,18 @@ public class DemoGame extends Game {
         setLogLevel(Level.INFO);             // enable logging
         this.rng = new Random();             // random number generator
         this.player = new Rectangle(20, 20); // some rectangle to represent the player
-        this.cat  = new IdleCat(this);       // the not so idle cat (see IdleCat.java)
+
     } // DemoGame
 
     /** {@inheritDoc} */
     @Override
     protected void init() {
         // setup subgraph for this component
-        getChildren().addAll(player, cat);         // add to main container
+        getChildren().addAll(player);         // add to main container
         // setup player
         player.setX(50);                           // 50px in the x direction (right)
         player.setY(50);                           // 50ps in the y direction (down)
         player.setOnMouseClicked(event -> handleClickPlayer(event));
-        // setup the cat
-        cat.setX(0);
-        cat.setY(0);
     } // init
 
     /** {@inheritDoc} */
@@ -63,9 +60,6 @@ public class DemoGame extends Game {
         // <--------------------------------------------------------------------
         // try adding the code to make the player move up and down!
         // <--------------------------------------------------------------------
-
-        // update idle cat
-        cat.update();
 
     } // update
 
