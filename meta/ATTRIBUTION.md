@@ -11,8 +11,23 @@ authored by members of your project team.
   - https://flic.kr/p/oeYPsZ
   - Public Domain
 
-* Idle Cat
-  - `resources/sprites/cat_idle.gif`
-  - dogchicken. 2012. "Cat Fighter Sprite Sheet"
-  - https://opengameart.org/content/cat-fighter-sprite-sheet
+* Ship, pointing up
+  - `resources/game/ship.png`
+  - Nhan Thanh Tran. 2022. Using GIMP
   - CC-BY 3.0
+
+* Ship, pointing right
+  - `resources/game/ship_r.png`
+  - Nhan Thanh Tran. 2022. Using GIMP
+  - CC-BY 3.0
+
+* Ship, pointing right, engines on
+  - `resources/game/ship_r_on.png`
+  - Nhan Thanh Tran. 2022. Using GIMP
+  - CC-BY 3.0
+
+*  Generic Celestia asteroid texture
+  - `resources/game/Generic_Celestia_asteroid_texture.jpg`
+  - Chris Laurel, probably. 30 July 2011, 11:00 (UTC).
+  - https://en.wikipedia.org/wiki/File:Generic_Celestia_asteroid_texture.jpg 
+  - Public domain
