@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.event.Event;
 import javafx.geometry.Bounds;
 import javafx.geometry.BoundingBox;
 import javafx.scene.input.KeyEvent;
@@ -16,15 +15,15 @@ import javafx.scene.layout.Region;
 import javafx.util.Duration;
 
 /**
- * An abstract parent class for simple games. The central component of any concrete
- * child class should be its overridden {@link #update} method as it represents one
- * iteration of the main game loop -- here is some pseudo code that illustrates
- * the {@link #play} method:
+ * An abstract parent class for simple games. The central component of any
+ * concrete child class should be its overridden {@link #update} method as it
+ * represents one iteration of the main game loop -- here is some pseudo code
+ * that illustrates the {@link #play} method:
  *
  * <pre>
  * init();
- * while(playing) {
- *    update();
+ * while (playing) {
+ *     update();
  * } // while
  * </pre>
  */
@@ -32,18 +31,21 @@ public abstract class Game extends Region {
 
     protected final Logger logger = Logger.getLogger("cs1302.game.Game");
 
-    private final Bounds bounds;                     // game bounds
-    private final Duration fpsTarget;                // target duration for game loop
-    private final Timeline loop = new Timeline();    // timeline for main game loop
+    private final Bounds bounds; // game bounds
+    private final Duration fpsTarget; // target duration for game loop
+    private final Timeline loop = new Timeline(); // timeline for main game loop
     private final BitSet keysPressed = new BitSet(); // set of currently pressed keys
+    private boolean mousePressed; // whether a mouse button is pressed
+    private MouseEvent lastMousePressedEvent; // last mouse event
 
-    private boolean initialized = false;             // play() has been called?
+    private boolean initialized = false; // play() has been called?
 
     /**
      * Construct a {@code Game} object.
-     * @param width minimum game region width
+     * 
+     * @param width  minimum game region width
      * @param height minimum game region height
-     * @param fps target frames per second (FPS)
+     * @param fps    target frames per second (FPS)
      */
     public Game(int width, int height, int fps) {
         super();
@@ -51,8 +53,12 @@ public abstract class Game extends Region {
         setMinHeight(height);
         this.bounds = new BoundingBox(0, 0, width, height);
         this.fpsTarget = Duration.millis(1000.0 / fps);
+        this.mousePressed = false;
+        this.lastMousePressedEvent = null;
         addEventFilter(KeyEvent.KEY_PRESSED, event -> handleKeyPressed(event));
         addEventFilter(KeyEvent.KEY_RELEASED, event -> handleKeyReleased(event));
+        addEventFilter(MouseEvent.MOUSE_PRESSED, event -> handleMousePressed(event));
+        addEventFilter(MouseEvent.MOUSE_RELEASED, event -> handleMouseReleased(event));
         initGameLoop();
     } // Game
 
@@ -69,12 +75,14 @@ public abstract class Game extends Region {
     } // initGameLoop
 
     /**
-     * Initialize the game. A game may override this method to perform initialization
-     * that needs to happen prior to the main game loop. The {@link #play} method
-     * will attempt to call this method only once. The implementation of this method
-     * provided by the {@code Game} class does nothing.
+     * Initialize the game. A game may override this method to perform
+     * initialization that needs to happen prior to the main game loop. The
+     * {@link #play} method will attempt to call this method only once. The
+     * implementation of this method provided by the {@code Game} class does
+     * nothing.
      */
-    protected void init() {}
+    protected void init() {
+    }
 
     /**
      * Perform one iteration of the main game loop.
@@ -83,6 +91,7 @@ public abstract class Game extends Region {
 
     /**
      * Add the key code for the pressed key to the set of pressed keys.
+     * 
      * @param event associated key event
      */
     private void handleKeyPressed(KeyEvent event) {
@@ -92,6 +101,7 @@ public abstract class Game extends Region {
 
     /**
      * Remove the key code for the released key from the set of pressed keys.
+     * 
      * @param event associated key event
      */
     private void handleKeyReleased(KeyEvent event) {
@@ -100,7 +110,41 @@ public abstract class Game extends Region {
     } // handleKeyReleased
 
     /**
+     * Updates the last mouse event. {@link #isMouseButtonPressed()} returns
+     * {@code true} if called immediately after this method.
+     * 
+     * @param event associated mouse event
+     */
+    private void handleMousePressed(MouseEvent event) {
+        logger.info(event.toString());
+        mousePressed = true;
+        lastMousePressedEvent = event;
+    } // handleMousePressed
+
+    /**
+     * Updates the last mouse event. {@link #isMouseButtonPressed()} returns
+     * {@code false} if called immediately after this method.
+     * 
+     * @param event associated key event
+     */
+    private void handleMouseReleased(MouseEvent event) {
+        logger.info(event.toString());
+        mousePressed = false;
+        lastMousePressedEvent = null;
+    } // handleMouseReleased
+
+    /**
+     * Returns the last mouse press event, or {@code null} if no mouse  
+     * 
+     * @return the last mouse event
+     */
+    protected MouseEvent getLastMousePressedEvent() {
+        return lastMousePressedEvent;
+    }
+
+    /**
      * Return whether or not a key is currently pressed.
+     * 
      * @param key the key code to check
      * @return {@code true} if the key is pressed; otherwise {@code false}
      */
@@ -109,9 +153,19 @@ public abstract class Game extends Region {
     } // isKeyPressed
 
     /**
+     * Return whether or not a mouse button is currently pressed.
+     * 
+     * @return {@code true} if a mouse button is pressed; otherwise {@code false}
+     */
+    protected final boolean isMouseButtonPressed() {
+        return mousePressed;
+    } // isMouseButtonPressed
+
+    /**
      * Return whether or not a key is currently pressed. If the key is pressed, then
      * {@code handler.run()} is run on the calling thread before the method returns.
-     * @param key the key code to check
+     * 
+     * @param key     the key code to check
      * @param handler the object whose {@code run} method is invoked
      * @return {@code true} if the key is pressed; otherwise {@code false}
      */
@@ -150,7 +204,9 @@ public abstract class Game extends Region {
     } // pause
 
     /**
-     * Set the log level specifying which message levels will be logged by the game's logger.
+     * Set the log level specifying which message levels will be logged by the
+     * game's logger.
+     * 
      * @param level level to set
      */
     public final void setLogLevel(Level level) {
@@ -159,6 +215,7 @@ public abstract class Game extends Region {
 
     /**
      * Get the bounds for this game that were specified when it was constructed.
+     * 
      * @return bounds for this game
      */
     public final Bounds getGameBounds() {

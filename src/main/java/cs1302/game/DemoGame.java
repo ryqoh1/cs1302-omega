@@ -60,10 +60,18 @@ public class DemoGame extends Game {
         isKeyPressed( KeyCode.UP, () -> player.setY(player.getY() - 10.0));
         isKeyPressed(KeyCode.DOWN, () -> player.setY(player.getY() + 10.0));
 
-        isKeyPressed( KeyCode.D, () -> player.setRotate(player.getRotate() + 4));
-        isKeyPressed( KeyCode.A, () -> player.setRotate(player.getRotate() - 4));
+        // don't rotate twice from keyboard and mouse
+        boolean rotationHandled = false;
+        if (isKeyPressed( KeyCode.D, () -> rotateRight())) {
+            rotationHandled = true;
+        } else if (isKeyPressed( KeyCode.A, () -> rotateLeft())) {
+            rotationHandled = true;
+        }
            
         Point2D movChange = new Point2D(0,0);
+        if (!rotationHandled && isMouseButtonPressed()) {
+            rotateShipToCursor(getLastMousePressedEvent());
+        }
         
         if (!isKeyPressed( KeyCode.W, () -> player.setFill(new ImagePattern(shipon)))) {
             player.setFill(new ImagePattern(shipoff));
@@ -74,6 +82,8 @@ public class DemoGame extends Game {
 
             movChange = new Point2D(changeX / 10, changeY / 10);
         }
+        
+        
         
         Point2D tmpShipMovement = velocity.add(movChange);
         double movX = tmpShipMovement.getX();
@@ -119,13 +129,44 @@ public class DemoGame extends Game {
     
     
     /**
-     * Move the player rectangle to a random position.
+     * Rotates the ship towards the mouse cursor.
      * @param event associated mouse event
      */
-    private void handleClickPlayer(MouseEvent event) {
-        logger.info(event.toString());
-        player.setX(rng.nextDouble() * (getWidth() - player.getWidth()));
-        player.setY(rng.nextDouble() * (getHeight() - player.getHeight()));
-    } // handleClickPlayer
+    private void rotateShipToCursor(MouseEvent event) {
+        
+        //logger.info(event.toString());
+        Bounds playerBounds = player.getBoundsInParent();
+        Point2D click = new Point2D(event.getX(),event.getY());
+        double angle = getAngle(new Point2D(playerBounds.getCenterX(), playerBounds.getCenterY()), click);
+        System.out.println(angle + " " + player.getRotate());
+        double oldR = player.getRotate();
+        if (angle < 0) {
+          player.setRotate(Math.max(angle, player.getRotate() - 5));
+        } else if (angle > 0) {
+          player.setRotate(Math.min(angle, player.getRotate() + 5));
+        }
+    }
+    
+    private double getAngle(Point2D p1, Point2D p2) {
+        double theta = Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());
+        double angle = Math.toDegrees(theta);
+        return angle;
+    }
+    
+    private void rotateLeft() {
+        double newRotate = player.getRotate() - 4;
+        if (newRotate < -180) {
+            newRotate = 360 + newRotate;
+        }
+        player.setRotate(newRotate);
+    }
+    
+    private void rotateRight() {
+        double newRotate = player.getRotate() + 4;
+        if (newRotate > 180) {
+            newRotate = -(360 - newRotate);
+        }
+        player.setRotate(newRotate);
+    }
 
 } // DemoGame
