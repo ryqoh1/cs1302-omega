@@ -102,17 +102,20 @@ public class DemoGame extends Game {
         Bounds gameBounds = getGameBounds();
         Bounds playerBounds = player.getBoundsInParent();
         
-        int m = 15;
+        double x = playerBounds.getCenterX();
+        double y = playerBounds.getCenterY();
         
-        if (playerBounds.getMaxX() - m > gameBounds.getMaxX()) {
+        int m = 10;
+        
+        if (x - m > gameBounds.getMaxX()) {
             player.setX(-m);
-        } else if (playerBounds.getMinX() + m < gameBounds.getMinX()) {
+        } else if (x + m < gameBounds.getMinX()) {
             player.setX(gameBounds.getMaxX() - m);
         }
         
-        if (playerBounds.getMaxY() - m > gameBounds.getMaxY()) {
+        if (y - m > gameBounds.getMaxY()) {
             player.setY(-m);
-        } else if (playerBounds.getMinY() + m < gameBounds.getMinY()) {
+        } else if (y + m < gameBounds.getMinY()) {
             player.setY(gameBounds.getMaxY() - m);
         }
         
