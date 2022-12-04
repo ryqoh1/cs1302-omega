@@ -3,6 +3,7 @@ package cs1302.game;
 import java.util.Random;
 import java.util.logging.Level;
 
+import javafx.geometry.Bounds;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
@@ -68,8 +69,31 @@ public class DemoGame extends Game {
         }
         
         player.setX(player.getX() + speed);
+        wrap();
     } // update
 
+    private void wrap() {
+        Bounds gameBounds = getGameBounds();
+        Bounds playerBounds = player.getBoundsInParent();
+        
+        int m = 15;
+        
+        if (playerBounds.getMaxX() - m > gameBounds.getMaxX()) {
+            player.setX(-m);
+        } else if (playerBounds.getMinX() + m < gameBounds.getMinX()) {
+            player.setX(gameBounds.getMaxX() - m);
+        }
+        
+        if (playerBounds.getMaxY() - m > gameBounds.getMaxY()) {
+            player.setY(-m);
+        } else if (playerBounds.getMinY() + m < gameBounds.getMinY()) {
+            player.setY(gameBounds.getMaxY() - m);
+        }
+        
+    }
+    
+    
+    
     /**
      * Move the player rectangle to a random position.
      * @param event associated mouse event
