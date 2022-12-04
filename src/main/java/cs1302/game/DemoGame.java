@@ -4,6 +4,7 @@ import java.util.Random;
 import java.util.logging.Level;
 
 import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
@@ -20,7 +21,7 @@ public class DemoGame extends Game {
     private Rectangle player; // some rectangle to represent the player
     private Image shipon = new Image("file:resources/game/ship_r_on.png");
     private Image shipoff = new Image("file:resources/game/ship_r.png");
-    private double speed;
+    private Point2D velocity = new Point2D(0,0);
 
 
     /**
@@ -61,14 +62,39 @@ public class DemoGame extends Game {
 
         isKeyPressed( KeyCode.D, () -> player.setRotate(player.getRotate() + 4));
         isKeyPressed( KeyCode.A, () -> player.setRotate(player.getRotate() - 4));
-   
-        isKeyPressed( KeyCode.W, () -> speed = speed + 0.1);
+           
+        Point2D movChange = new Point2D(0,0);
         
-        if (speed > 10) {
-            speed = 10;
+        if (!isKeyPressed( KeyCode.W, () -> player.setFill(new ImagePattern(shipon)))) {
+            player.setFill(new ImagePattern(shipoff));
+        } else {
+            double dir = player.getRotate();
+            double changeX = Math.cos(Math.toRadians(dir));
+            double changeY = Math.sin(Math.toRadians(dir));
+
+            movChange = new Point2D(changeX / 10, changeY / 10);
         }
         
-        player.setX(player.getX() + speed);
+        Point2D tmpShipMovement = velocity.add(movChange);
+        double movX = tmpShipMovement.getX();
+        double movY = tmpShipMovement.getY();
+
+        if (movX < -10) {
+            movX = -10;
+        } else if (movX > 10) {
+            movX = 10;
+        }
+
+        if (movY < -10) {
+            movY = -10;
+        } else if (movY > 10) {
+            movY = 10;
+        }
+        
+        player.setX(player.getX() + movX);
+        player.setY(player.getY() + movY);
+        velocity = new Point2D(movX, movY);
+        
         wrap();
     } // update
 
