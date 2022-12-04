@@ -78,22 +78,17 @@ public class DemoGame extends Game {
         Point2D tmpShipMovement = velocity.add(movChange);
         double movX = tmpShipMovement.getX();
         double movY = tmpShipMovement.getY();
-
-        if (movX < -10) {
-            movX = -10;
-        } else if (movX > 10) {
-            movX = 10;
-        }
-
-        if (movY < -10) {
-            movY = -10;
-        } else if (movY > 10) {
-            movY = 10;
+        double speed = tmpShipMovement.magnitude();
+        double mult = 1;
+        if (Math.abs(speed) > 10) {
+            mult = 10 / Math.abs(speed);
         }
         
-        player.setX(player.getX() + movX);
-        player.setY(player.getY() + movY);
-        velocity = new Point2D(movX, movY);
+        velocity = new Point2D(movX * mult, movY * mult);
+
+        
+        player.setX(player.getX() + velocity.getX());
+        player.setY(player.getY() + velocity.getY());
         
         wrap();
     } // update
