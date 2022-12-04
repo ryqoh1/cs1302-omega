@@ -42,7 +42,7 @@ public abstract class AnimatedObject {
     protected Point2D movement;
     /** Spin applied once, at the next update */
     protected double rotate;
-    /** The direction this object is facing */
+    /** The direction this object is facing, in degrees */
     protected double direction;
     /** The maximum magnitude of the velocity */
     private double maxSpeed;
@@ -182,8 +182,20 @@ public abstract class AnimatedObject {
      * 
      * @return the direction
      */
-    public double getDirection() {
+    public double getDirectionInDegrees() {
         return direction;
+    }
+
+    /**
+     * Returns a vector with a length of 1.0 and direction the same as this object's
+     * direction.
+     * 
+     * @return the direction
+     */
+    public Point2D getDirection() {
+        double changeX = Math.cos(Math.toRadians(direction));
+        double changeY = Math.sin(Math.toRadians(direction));
+        return new Point2D(changeX, changeY);
     }
 
     /**
@@ -268,15 +280,14 @@ public abstract class AnimatedObject {
         // clear instant movement
         movement = ZERO_MOVEMENT;
         // set new position
-        double x = shape.getTranslateX();
-        double y = shape.getTranslateY();
-        shape.setTranslateX(x + delta.getX());
-        shape.setTranslateY(y + delta.getY());
+        double x = shape.getLayoutX();
+        double y = shape.getLayoutY();
+        shape.relocate(x + delta.getX(), y + delta.getY());
         // wrap if needed
         wrap();
     }
 
-    /** Updates the position and direction of this object */
+    /** Updates the position and direction of this object. */
     public abstract void update();
 
 }
