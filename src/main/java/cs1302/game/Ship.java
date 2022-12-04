@@ -14,6 +14,9 @@ public class Ship extends AnimatedObject {
     private static final ImagePattern SHIP_OFF = new ImagePattern(
             new Image("file:resources/game/ship_r.png"));
 
+    private static final int SHIP_WIDTH = 30;
+    private static final int SHIP_HEIGHT = 30;
+    
     private static final int FIRE_DELAY = 60;
 
     private boolean enginesOn;
@@ -25,7 +28,7 @@ public class Ship extends AnimatedObject {
      */
     public Ship(Game game) {
         super(game);
-        shape = new Rectangle(SHIP_ON.getWidth(), SHIP_ON.getHeight());
+        shape = new Rectangle(SHIP_WIDTH, SHIP_HEIGHT);
         shape.setFill(SHIP_OFF);
         setMaxSpeed(10);
         enginesOn = false;
