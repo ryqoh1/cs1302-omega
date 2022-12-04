@@ -3,9 +3,12 @@ package cs1302.game;
 import java.util.Random;
 import java.util.logging.Level;
 
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Region;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 
 /**
@@ -14,8 +17,10 @@ import javafx.scene.shape.Rectangle;
  */
 public class DemoGame extends Game {
 
-    private Random rng;       // random number generator
     private Rectangle player; // some rectangle to represent the player
+    private Image shipon = new Image("file:resources/game/ship_r_on.png");
+    private Image shipoff = new Image("file:resources/game/ship_r.png");
+    private Point2D velocity = new Point2D(0,0);
 
 
     /**
@@ -26,51 +31,157 @@ public class DemoGame extends Game {
     public DemoGame(int width, int height) {
         super(width, height, 60);            // call parent constructor
         setLogLevel(Level.INFO);             // enable logging
-        this.rng = new Random();             // random number generator
-        this.player = new Rectangle(20, 20); // some rectangle to represent the player
+        this.player = new Rectangle(30, 30); // some rectangle to represent the player
 
     } // DemoGame
 
     /** {@inheritDoc} */
     @Override
     protected void init() {
+        player.setFill(new ImagePattern(shipoff));
         // setup subgraph for this component
         getChildren().addAll(player);         // add to main container
         // setup player
-        player.setX(50);                           // 50px in the x direction (right)
-        player.setY(50);                           // 50ps in the y direction (down)
-        player.setOnMouseClicked(event -> handleClickPlayer(event));
+        player.setX(0);
+        player.setY(0);
     } // init
 
     /** {@inheritDoc} */
     @Override
     protected void update() {
 
-        // (x, y)         In computer graphics, coordinates along an x-axis and
-        // (0, 0) -x--->  y-axis are used. When compared to the standard
-        // |              Cartesian plane that most students are familiar with,
-        // y              the x-axis behaves the same, but the y-axis increases
-        // |              in the downward direction! Keep this in mind when
-        // v              adjusting the x and y positions of child nodes.
-
         // update player position
         isKeyPressed( KeyCode.LEFT, () -> player.setX(player.getX() - 10.0));
         isKeyPressed(KeyCode.RIGHT, () -> player.setX(player.getX() + 10.0));
 
-        // <--------------------------------------------------------------------
-        // try adding the code to make the player move up and down!
-        // <--------------------------------------------------------------------
+        // update player position
+        isKeyPressed( KeyCode.UP, () -> player.setY(player.getY() - 10.0));
+        isKeyPressed(KeyCode.DOWN, () -> player.setY(player.getY() + 10.0));
 
+        // don't rotate twice from keyboard and mouse
+        boolean rotationHandled = false;
+        if (isKeyPressed( KeyCode.D, () -> rotateRight())) {
+            rotationHandled = true;
+        } else if (isKeyPressed( KeyCode.A, () -> rotateLeft())) {
+            rotationHandled = true;
+        }
+           
+        Point2D movChange = new Point2D(0,0);
+        if (!rotationHandled && isMouseButtonPressed()) {
+            rotateShipToCursor(getLastMousePressedEvent());
+        }
+        
+        if (!isKeyPressed( KeyCode.W, () -> player.setFill(new ImagePattern(shipon)))) {
+            player.setFill(new ImagePattern(shipoff));
+        } else {
+            double dir = player.getRotate();
+            double changeX = Math.cos(Math.toRadians(dir));
+            double changeY = Math.sin(Math.toRadians(dir));
+
+            movChange = new Point2D(changeX / 10, changeY / 10);
+        }
+        
+        
+        
+        Point2D tmpShipMovement = velocity.add(movChange);
+        double movX = tmpShipMovement.getX();
+        double movY = tmpShipMovement.getY();
+        double speed = tmpShipMovement.magnitude();
+        double mult = 1;
+        if (Math.abs(speed) > 10) {
+            mult = 10 / Math.abs(speed);
+        }
+        
+        velocity = new Point2D(movX * mult, movY * mult);
+
+        
+        player.setX(player.getX() + velocity.getX());
+        player.setY(player.getY() + velocity.getY());
+        
+        wrap();
     } // update
 
+    private void wrap() {
+        Bounds gameBounds = getGameBounds();
+        Bounds playerBounds = player.getBoundsInParent();
+        Bounds localBounds = player.getBoundsInLocal();
+        
+        double x = playerBounds.getCenterX();
+        double y = playerBounds.getCenterY();
+        double w = localBounds.getWidth();
+        double h = localBounds.getHeight();
+        
+        // percent of the object that should remain visible before wrapping it around
+        double percentBeforeWrap = 50;
+        double wBeforeWrap = w * (percentBeforeWrap / 100) / 2;
+        double hBeforeWrap = h * (percentBeforeWrap / 100) / 2;
+        boolean ooo = false;;
+        if (x - wBeforeWrap > gameBounds.getMaxX()) {
+            player.relocate(-(w - wBeforeWrap), playerBounds.getMinY());
+            ooo = true;
+        } else if (x + wBeforeWrap < gameBounds.getMinX()) {
+            player.relocate(gameBounds.getMaxX() - wBeforeWrap, playerBounds.getMinY());
+            ooo = true;
+        }
+        
+        if (y - hBeforeWrap > gameBounds.getMaxY()) {
+            player.relocate(playerBounds.getMinX(), -(h - hBeforeWrap));
+            ooo = true;
+        } else if (y + hBeforeWrap < gameBounds.getMinY()) {
+            player.relocate(playerBounds.getMinX(), gameBounds.getMaxY() - hBeforeWrap);
+            ooo = true;
+        }
+        if (ooo) {
+            System.out.println(w);
+            System.out.println(h);
+            System.out.println(wBeforeWrap);
+            System.out.println(hBeforeWrap);
+            System.out.println(player.getBoundsInParent().getCenterX());
+            System.out.println(player.getBoundsInParent().getCenterY());
+        }
+    }
+    
+    
+    
     /**
-     * Move the player rectangle to a random position.
+     * Rotates the ship towards the mouse cursor.
      * @param event associated mouse event
      */
-    private void handleClickPlayer(MouseEvent event) {
-        logger.info(event.toString());
-        player.setX(rng.nextDouble() * (getWidth() - player.getWidth()));
-        player.setY(rng.nextDouble() * (getHeight() - player.getHeight()));
-    } // handleClickPlayer
+    private void rotateShipToCursor(MouseEvent event) {
+        
+        //logger.info(event.toString());
+        Bounds playerBounds = player.getBoundsInParent();
+        Point2D click = new Point2D(event.getX(),event.getY());
+        double angle = getAngle(new Point2D(playerBounds.getCenterX(), playerBounds.getCenterY()), click);
+        System.out.println(angle + " " + player.getRotate());
+        double oldR = player.getRotate();
+        if (angle < 0) {
+          player.setRotate(Math.max(angle, player.getRotate() - 5));
+        } else if (angle > 0) {
+          player.setRotate(Math.min(angle, player.getRotate() + 5));
+        }
+    }
+    
+    private double getAngle(Point2D p1, Point2D p2) {
+        double theta = Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());
+        double angle = Math.toDegrees(theta);
+        return angle;
+    }
+    
+    private void rotateLeft() {
+        double newRotate = player.getRotate() - 4;
+        if (newRotate < -180) {
+            newRotate = 360 + newRotate;
+        }
+        player.setRotate(newRotate);
+    }
+    
+    private void rotateRight() {
+        double newRotate = player.getRotate() + 4;
+        if (newRotate > 180) {
+            newRotate = -(360 - newRotate);
+        }
+        player.setRotate(newRotate);
+    }
 
 } // DemoGame
