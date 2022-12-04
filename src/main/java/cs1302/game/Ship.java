@@ -3,8 +3,10 @@ package cs1302.game;
 import javafx.scene.image.Image;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 
+/**
+ * An animated object representing the player's ship.
+ */
 public class Ship extends AnimatedObject {
 
     /** Ship with engines on */
@@ -16,7 +18,7 @@ public class Ship extends AnimatedObject {
 
     private static final int SHIP_WIDTH = 30;
     private static final int SHIP_HEIGHT = 30;
-    
+
     private static final int FIRE_DELAY = 60;
 
     private boolean enginesOn;
@@ -25,6 +27,7 @@ public class Ship extends AnimatedObject {
      * Creates a new Ship with the specified Game.
      * 
      * @param game
+     * @throws NullPointerException if the game is null
      */
     public Ship(Game game) {
         super(game);
@@ -34,6 +37,11 @@ public class Ship extends AnimatedObject {
         enginesOn = false;
     }
 
+    /**
+     * Turns the ship's engines on or off depending on the specified value.
+     * 
+     * @param value {@code true} if the engines should be turned on, false otherwise
+     */
     public void setEnginesOn(boolean value) {
         enginesOn = value;
     }

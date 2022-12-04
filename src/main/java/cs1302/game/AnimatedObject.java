@@ -160,9 +160,10 @@ public abstract class AnimatedObject {
     }
 
     /**
-     * Sets the value this object should be wrapped around if
+     * Percentage of this object's dimensions at which the object is wrapped around
+     * to the opposite side of the game area.
      * 
-     * @param wrapAtPercent
+     * @param wrapAtPercent wrap percentage
      */
     public void setWrapAtPercent(double wrapAtPercent) {
         this.wrapAt = wrapAtPercent;
