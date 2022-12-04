@@ -17,7 +17,6 @@ import javafx.scene.shape.Rectangle;
  */
 public class DemoGame extends Game {
 
-    private Random rng;       // random number generator
     private Rectangle player; // some rectangle to represent the player
     private Image shipon = new Image("file:resources/game/ship_r_on.png");
     private Image shipoff = new Image("file:resources/game/ship_r.png");
@@ -32,7 +31,6 @@ public class DemoGame extends Game {
     public DemoGame(int width, int height) {
         super(width, height, 60);            // call parent constructor
         setLogLevel(Level.INFO);             // enable logging
-        this.rng = new Random();             // random number generator
         this.player = new Rectangle(30, 30); // some rectangle to represent the player
 
     } // DemoGame
@@ -106,24 +104,41 @@ public class DemoGame extends Game {
     private void wrap() {
         Bounds gameBounds = getGameBounds();
         Bounds playerBounds = player.getBoundsInParent();
+        Bounds localBounds = player.getBoundsInLocal();
         
         double x = playerBounds.getCenterX();
         double y = playerBounds.getCenterY();
+        double w = localBounds.getWidth();
+        double h = localBounds.getHeight();
         
-        int m = 10;
-        
-        if (x - m > gameBounds.getMaxX()) {
-            player.setX(-m);
-        } else if (x + m < gameBounds.getMinX()) {
-            player.setX(gameBounds.getMaxX() - m);
+        // percent of the object that should remain visible before wrapping it around
+        double percentBeforeWrap = 50;
+        double wBeforeWrap = w * (percentBeforeWrap / 100) / 2;
+        double hBeforeWrap = h * (percentBeforeWrap / 100) / 2;
+        boolean ooo = false;;
+        if (x - wBeforeWrap > gameBounds.getMaxX()) {
+            player.relocate(-(w - wBeforeWrap), playerBounds.getMinY());
+            ooo = true;
+        } else if (x + wBeforeWrap < gameBounds.getMinX()) {
+            player.relocate(gameBounds.getMaxX() - wBeforeWrap, playerBounds.getMinY());
+            ooo = true;
         }
         
-        if (y - m > gameBounds.getMaxY()) {
-            player.setY(-m);
-        } else if (y + m < gameBounds.getMinY()) {
-            player.setY(gameBounds.getMaxY() - m);
+        if (y - hBeforeWrap > gameBounds.getMaxY()) {
+            player.relocate(playerBounds.getMinX(), -(h - hBeforeWrap));
+            ooo = true;
+        } else if (y + hBeforeWrap < gameBounds.getMinY()) {
+            player.relocate(playerBounds.getMinX(), gameBounds.getMaxY() - hBeforeWrap);
+            ooo = true;
         }
-        
+        if (ooo) {
+            System.out.println(w);
+            System.out.println(h);
+            System.out.println(wBeforeWrap);
+            System.out.println(hBeforeWrap);
+            System.out.println(player.getBoundsInParent().getCenterX());
+            System.out.println(player.getBoundsInParent().getCenterY());
+        }
     }
     
     
