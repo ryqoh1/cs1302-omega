@@ -19,6 +19,7 @@ public class DemoGame extends Game {
     private Rectangle player; // some rectangle to represent the player
     private Image shipon = new Image("file:resources/game/ship_r_on.png");
     private Image shipoff = new Image("file:resources/game/ship_r.png");
+    private double speed;
 
 
     /**
@@ -57,6 +58,16 @@ public class DemoGame extends Game {
         isKeyPressed( KeyCode.UP, () -> player.setY(player.getY() - 10.0));
         isKeyPressed(KeyCode.DOWN, () -> player.setY(player.getY() + 10.0));
 
+        isKeyPressed( KeyCode.D, () -> player.setRotate(player.getRotate() + 4));
+        isKeyPressed( KeyCode.A, () -> player.setRotate(player.getRotate() - 4));
+   
+        isKeyPressed( KeyCode.W, () -> speed = speed + 0.1);
+        
+        if (speed > 10) {
+            speed = 10;
+        }
+        
+        player.setX(player.getX() + speed);
     } // update
 
     /**
