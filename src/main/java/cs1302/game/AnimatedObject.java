@@ -4,9 +4,7 @@ import java.util.Objects;
 
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
-import javafx.scene.transform.Translate;
 
 /**
  * An animated object on the game screen.
@@ -53,7 +51,7 @@ public abstract class AnimatedObject {
      * by more than this amount
      */
     private double wrapAt;
-    
+
     /**
      * Creates a new AnimatedObject with the specified {@link #Game}.
      * 
@@ -70,7 +68,7 @@ public abstract class AnimatedObject {
     }
 
     /**
-     * Sets the velocity of this object to the specified value. If {@code maxSpeed}
+     * Sets the velocity of this object to the specified value. If {@link #maxSpeed}
      * is set, the velocity vector's magnitude(length) may be reduced to not exceed
      * this value.
      * 
@@ -81,8 +79,8 @@ public abstract class AnimatedObject {
         Objects.requireNonNull(velocity);
         double speed = velocity.magnitude();
         double mult = 1;
-        if (Math.abs(speed) > 10) {
-            mult = 10 / Math.abs(speed);
+        if (Math.abs(speed) > maxSpeed) {
+            mult = maxSpeed / Math.abs(speed);
         }
         this.velocity = velocity.multiply(mult);
     }
@@ -98,10 +96,10 @@ public abstract class AnimatedObject {
 
     /**
      * Changes the velocity of this object by the specified value. If
-     * {@code maxSpeed} is set, the velocity vector's magnitude(length) may be
+     * {@link #maxSpeed} is set, the velocity vector's magnitude(length) may be
      * reduced to not exceed this value.
      * 
-     * @param delta
+     * @param delta the change
      * @throws NullPointerException if {@code delta} is null
      */
     public void changeVelocity(Point2D delta) {
@@ -109,8 +107,8 @@ public abstract class AnimatedObject {
         Point2D newVelocity = velocity.add(delta);
         double speed = newVelocity.magnitude();
         double mult = 1;
-        if (Math.abs(speed) > 10) {
-            mult = 10 / Math.abs(speed);
+        if (Math.abs(speed) > maxSpeed) {
+            mult = maxSpeed / Math.abs(speed);
         }
         velocity = newVelocity.multiply(mult);
     }
@@ -190,15 +188,15 @@ public abstract class AnimatedObject {
     }
 
     /**
-     * Returns a vector with a length of 1.0 and direction the same as this object's
+     * Returns a vector with the length of 1.0 and direction the same as this object's
      * direction.
      * 
      * @return the direction
      */
     public Point2D getDirection() {
-        double changeX = Math.cos(Math.toRadians(direction));
-        double changeY = Math.sin(Math.toRadians(direction));
-        return new Point2D(changeX, changeY);
+        double x = Math.cos(Math.toRadians(direction));
+        double y = Math.sin(Math.toRadians(direction));
+        return new Point2D(x, y);
     }
 
     /**
@@ -224,9 +222,22 @@ public abstract class AnimatedObject {
     }
 
     /**
+     * Returns {@code true} if this object collides with the specified object.
+     * 
+     * @param other the other object
+     * @return {@code true} if the two objects collide, {@code false} otherwise
+     * @throws NullPointerException if other is null
+     */
+    public boolean collidesWith(AnimatedObject other) {
+        Shape otherShape = other.getShape();
+        Shape intersection = Shape.intersect(shape, otherShape);
+        return !intersection.getBoundsInLocal().isEmpty();
+    }
+
+    /**
      * Wraps this object around if it would leave the game area otherwise.
      */
-    private void wrap() {
+    protected void wrap() {
         Bounds gameBounds = game.getGameBounds();
         Bounds objectBounds = shape.getBoundsInParent();
         Bounds localBounds = shape.getBoundsInLocal();
@@ -288,7 +299,7 @@ public abstract class AnimatedObject {
         shape.setTranslateX(x);
         shape.setTranslateY(y);
         // wrap if needed
-         wrap();
+        wrap();
     }
 
     /** Updates the position and direction of this object. */
