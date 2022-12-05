@@ -4,7 +4,9 @@ import java.util.Objects;
 
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.scene.transform.Translate;
 
 /**
  * An animated object on the game screen.
@@ -51,7 +53,7 @@ public abstract class AnimatedObject {
      * by more than this amount
      */
     private double wrapAt;
-
+    
     /**
      * Creates a new AnimatedObject with the specified {@link #Game}.
      * 
@@ -228,31 +230,31 @@ public abstract class AnimatedObject {
         Bounds gameBounds = game.getGameBounds();
         Bounds objectBounds = shape.getBoundsInParent();
         Bounds localBounds = shape.getBoundsInLocal();
-        // center coodinates relative to the game area
-        double x = objectBounds.getCenterX();
-        double y = objectBounds.getCenterY();
+        // central coodinates relative to the game area
+        double cx = objectBounds.getCenterX();
+        double cy = objectBounds.getCenterY();
         // size of the Bounds box around the shape
         double w = localBounds.getWidth();
         double h = localBounds.getHeight();
         // wrapAt is the percent of the object that should remain visible before
         // wrapping it around
-        double wBeforeWrap = w * (wrapAt / 100) / 2;
-        double hBeforeWrap = h * (wrapAt / 100) / 2;
+        double wBeforeWrap = w * (wrapAt / 100);
+        double hBeforeWrap = h * (wrapAt / 100);
         // objects are wrapped around when they are out of the game area by more than
         // the above specified amount
         // objects appear on the other side, also slightly out of the game area
         // in order to make the transition more visually pleasing
         // horizontal wrapping
-        if (x - wBeforeWrap > gameBounds.getMaxX()) {
-            shape.relocate(-(w - wBeforeWrap), objectBounds.getMinY());
-        } else if (x + wBeforeWrap < gameBounds.getMinX()) {
-            shape.relocate(gameBounds.getMaxX() - wBeforeWrap, objectBounds.getMinY());
+        if (cx - wBeforeWrap > gameBounds.getMaxX()) {
+            shape.setTranslateX(-wBeforeWrap);
+        } else if (cx + wBeforeWrap < gameBounds.getMinX()) {
+            shape.setTranslateX(gameBounds.getMaxX() - wBeforeWrap);
         }
         // vertical wrapping
-        if (y - hBeforeWrap > gameBounds.getMaxY()) {
-            shape.relocate(objectBounds.getMinX(), -(h - hBeforeWrap));
-        } else if (y + hBeforeWrap < gameBounds.getMinY()) {
-            shape.relocate(objectBounds.getMinX(), gameBounds.getMaxY() - hBeforeWrap);
+        if (cy - hBeforeWrap > gameBounds.getMaxY()) {
+            shape.setTranslateY(-hBeforeWrap);
+        } else if (cy + hBeforeWrap < gameBounds.getMinY()) {
+            shape.setTranslateY(gameBounds.getMaxY() - hBeforeWrap);
         }
     }
 
@@ -281,11 +283,12 @@ public abstract class AnimatedObject {
         // clear instant movement
         movement = ZERO_MOVEMENT;
         // set new position
-        double x = shape.getLayoutX();
-        double y = shape.getLayoutY();
-        shape.relocate(x + delta.getX(), y + delta.getY());
+        double x = shape.getTranslateX() + delta.getX();
+        double y = shape.getTranslateY() + delta.getY();
+        shape.setTranslateX(x);
+        shape.setTranslateY(y);
         // wrap if needed
-        wrap();
+         wrap();
     }
 
     /** Updates the position and direction of this object. */
