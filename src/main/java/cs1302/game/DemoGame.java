@@ -65,19 +65,19 @@ public class DemoGame extends Game {
     protected void update() {
 
         if (waitingForInteraction) {
-            if (isAnyKeyPressed()) {
+            if (isKeyPressed(KeyCode.ENTER)) {
                 waitingForInteraction = false;
                 gameScreen.displayInfo("");
             }
             return;
         }
 
-        isKeyPressed(KeyCode.SPACE, () -> {
+        if (shipInvulnerable == 0 && isKeyPressed(KeyCode.SPACE)) {
             if (player.fire()) {
                 // spawn projectile
                 spawnProjectile();
             }
-        });
+        }
 
         // update player position
         isKeyPressed(KeyCode.LEFT, () -> player.move(new Point2D(-10, 0)));
@@ -108,6 +108,14 @@ public class DemoGame extends Game {
         player.update();
         shipInvulnerable = Math.max(0, shipInvulnerable - 1);
 
+        if (shipInvulnerable > 0) {
+            if ((shipInvulnerable / 20) % 2 == 0) {
+                player.getShape().setVisible(true);
+            } else {
+                player.getShape().setVisible(false);
+            }
+        }
+        
         updateAsteroids();
 
         updateProjectiles();
@@ -178,7 +186,7 @@ public class DemoGame extends Game {
             waitingForInteraction = true;
             lives--;
             gameScreen.displayLives(lives);
-            gameScreen.displayInfo("PRESS ANY KEY\nTO CONTINUE");
+            gameScreen.displayInfo("PRESS ENTER\nTO CONTINUE");
             shipInvulnerable = 300;
         }
     }

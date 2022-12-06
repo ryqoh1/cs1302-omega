@@ -63,7 +63,7 @@ public class GameScreen {
         displayScore(0);
         Pane livesArea = initLivesArea();
 
-        info = new Text("PRESS ANY KEY \n TO START");
+        info = new Text("PRESS ENTER\nTO START");
         info.setFill(Color.WHITE);
         info.setFont(OmegaApp.F18);
         info.setTextAlignment(TextAlignment.CENTER);
