@@ -109,6 +109,11 @@ public class DemoGame extends Game {
 
         player.update();
 
+        List<Projectile> projectilesToRemove = new ArrayList<>();
+        List<Asteroid> asteroidsToRemove = new ArrayList<>();
+        List<Asteroid> asteroidsToAdd = new ArrayList<>();
+
+        
         for (Asteroid a : asteroids) {
             c--;
             if (c == 0) {
@@ -120,15 +125,49 @@ public class DemoGame extends Game {
                 // pause();
             }
             
+            for (Projectile p : projectiles) {
+                if (a.collidesWith(p)) {
+                    projectilesToRemove.add(p);
+                    asteroidsToRemove.add(a);
+                    List<Asteroid> newAsteroids = a.split();
+                    Bounds objectBounds = a.getShape().getBoundsInParent();
+                    double cx = objectBounds.getCenterX();
+                    double cy = objectBounds.getCenterY();
+                    for (Asteroid aa : newAsteroids) {
+                        aa.move(new Point2D(cx, cy));
+                        aa.move(new Point2D(rnd.nextDouble(10) - 5, rnd.nextDouble(10) - 5));
+                        aa.randomizeMovement();
+                    }
+                    
+                    
+                    asteroidsToAdd.addAll(newAsteroids);
+                }
+            }
         }
 
+        projectiles.removeAll(projectilesToRemove);
+        
         for (Projectile p : projectiles) {
             if (p.getTimeLeft() == 0) {
-                getChildren().remove(p.getShape());
+                projectilesToRemove.add(p);
             }
             p.update();
         }
 
+        projectiles.removeAll(projectilesToRemove);
+        for (Projectile p : projectilesToRemove) {
+            getChildren().remove(p.getShape());
+        }
+        
+        asteroids.removeAll(asteroidsToRemove);
+        for (Asteroid a : asteroidsToRemove) {
+            getChildren().remove(a.getShape());
+        }
+        
+        asteroids.addAll(asteroidsToAdd);
+        for (Asteroid a : asteroidsToAdd) {
+            getChildren().add(a.getShape());
+        }
     } // update
 
 //    /**
