@@ -92,8 +92,8 @@ public class GameScreen {
         infoArea.getChildren().add(space2);
         infoArea.getChildren().add(scoreArea);
 
-        game = new DemoGame(width, height - INFO_HEIGHT);
-        game.setBackground(new Background(new BackgroundFill(Color.BLUE, null, null)));
+        game = new DemoGame(width, height - INFO_HEIGHT, this);
+        game.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
         // this makes the game area render after the info area without affecting the
         // layout
         game.setViewOrder(1);

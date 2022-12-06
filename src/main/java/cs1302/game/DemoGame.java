@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.logging.Level;
 
 import cs1302.game.Asteroid.AsteroidType;
+import cs1302.omega.GameScreen;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.input.KeyCode;
@@ -22,7 +23,11 @@ public class DemoGame extends Game {
     private List<Asteroid> asteroids = new ArrayList<>();
     private List<Projectile> projectiles = new ArrayList<>();
     private Random rnd = new Random();
+    private int score = 0;
+    private int lives = 3;
     int c = 1;
+    
+    private GameScreen gameScreen;
 
     /**
      * Construct a {@code DemoGame} object.
@@ -30,8 +35,9 @@ public class DemoGame extends Game {
      * @param width  scene width
      * @param height scene height
      */
-    public DemoGame(int width, int height) {
+    public DemoGame(int width, int height, GameScreen gameScreen) {
         super(width, height, 60); // call parent constructor
+        this.gameScreen = gameScreen;
         setLogLevel(Level.INFO); // enable logging
         this.player = new Ship(this);
         // ship should be rendered last
@@ -53,6 +59,7 @@ public class DemoGame extends Game {
             a.randomizeMovement();
             getChildren().add(a.getShape());
         }
+        gameScreen.displayLives(lives);
     } // init
 
     /** {@inheritDoc} */
@@ -162,12 +169,28 @@ public class DemoGame extends Game {
         asteroids.removeAll(asteroidsToRemove);
         for (Asteroid a : asteroidsToRemove) {
             getChildren().remove(a.getShape());
+            switch(a.getType()) {
+            case LARGE:
+                score += 145;
+                break;
+            case MEDIUM:
+                score += 285;
+                break;
+            case SMALL:
+                score += 500;
+                break;
+            default:
+                throw new IllegalStateException("unhandled enum type");
+            }
         }
         
         asteroids.addAll(asteroidsToAdd);
         for (Asteroid a : asteroidsToAdd) {
             getChildren().add(a.getShape());
         }
+        
+        // update game screen
+        gameScreen.displayScore(score);
     } // update
 
 //    /**

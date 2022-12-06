@@ -106,7 +106,7 @@ public class Asteroid extends AnimatedObject {
             velocity = baseVelocity.multiply(0.4);
         }
     }
-    
+
     /**
      * Splits this asteroid into smaller ones.
      * 
@@ -114,7 +114,7 @@ public class Asteroid extends AnimatedObject {
      */
     public List<Asteroid> split() {
         List<Asteroid> result = new ArrayList<>();
-        
+
         switch (type) {
         case SMALL:
             // small asteroids can't be split further
@@ -133,9 +133,13 @@ public class Asteroid extends AnimatedObject {
             for (int i = 0; i < 1; i++) {
                 result.add(new Asteroid(game, AsteroidType.SMALL));
             }
+            break;
+        default:
+            throw new IllegalStateException("unhandled enum type");
         }
-        
+
         return result;
+
     }
 
     @Override
