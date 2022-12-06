@@ -1,5 +1,7 @@
 package cs1302.game;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import javafx.geometry.Point2D;
@@ -103,6 +105,37 @@ public class Asteroid extends AnimatedObject {
             spin = baseSpin * 0.4;
             velocity = baseVelocity.multiply(0.4);
         }
+    }
+    
+    /**
+     * Splits this asteroid into smaller ones.
+     * 
+     * @return a list containing the newly created asteroids
+     */
+    public List<Asteroid> split() {
+        List<Asteroid> result = new ArrayList<>();
+        
+        switch (type) {
+        case SMALL:
+            // small asteroids can't be split further
+            break;
+        case MEDIUM:
+            // split into 3 small ones
+            for (int i = 0; i < 3; i++) {
+                result.add(new Asteroid(game, AsteroidType.SMALL));
+            }
+            break;
+        case LARGE:
+            // split into 3 medium and 1 small ones
+            for (int i = 0; i < 3; i++) {
+                result.add(new Asteroid(game, AsteroidType.MEDIUM));
+            }
+            for (int i = 0; i < 1; i++) {
+                result.add(new Asteroid(game, AsteroidType.SMALL));
+            }
+        }
+        
+        return result;
     }
 
     @Override
