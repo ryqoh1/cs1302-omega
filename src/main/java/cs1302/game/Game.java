@@ -151,6 +151,15 @@ public abstract class Game extends Region {
     protected final boolean isKeyPressed(KeyCode key) {
         return keysPressed.get(key.getCode());
     } // isKeyPressed
+    
+    /**
+     * Return whether or not any key is currently pressed.
+     * 
+     * @return {@code true} if the any key is pressed; otherwise {@code false}
+     */
+    protected final boolean isAnyKeyPressed() {
+        return !keysPressed.isEmpty();
+    } // isAnyKeyPressed
 
     /**
      * Return whether or not a mouse button is currently pressed.

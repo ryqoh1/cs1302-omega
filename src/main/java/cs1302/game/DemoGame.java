@@ -25,6 +25,8 @@ public class DemoGame extends Game {
     private Random rnd = new Random();
     private int score = 0;
     private int lives = 3;
+    private boolean waitingForInteraction;
+    private boolean shipInvulnerable;
     int c = 1;
     
     private GameScreen gameScreen;
@@ -51,40 +53,30 @@ public class DemoGame extends Game {
     protected void init() {
         // setup subgraph for this component
         getChildren().addAll(player.getShape());
-        player.move(new Point2D(100, 0));
-        for (int i = 0; i < 5; i++) {
-            Asteroid a = new Asteroid(this, AsteroidType.LARGE);
-            asteroids.add(a);
-            a.move(new Point2D(rnd.nextDouble(500 - 50), rnd.nextDouble(500 - 50)));
-            a.randomizeMovement();
-            getChildren().add(a.getShape());
-        }
+        player.move(new Point2D(getWidth() / 2 - 15, getHeight() / 2 - 15));
+        player.rotate(-90.0);
         gameScreen.displayLives(lives);
+        spawnInitialAsteroids();
+        update();
+        waitingForInteraction = true;
     } // init
 
     /** {@inheritDoc} */
     @Override
     protected void update() {
+        
+        if (waitingForInteraction) {
+            if (isAnyKeyPressed()) {
+                waitingForInteraction = false;
+                gameScreen.displayInfo("");
+            }
+            return;
+        }
 
         isKeyPressed(KeyCode.SPACE, () -> {
             if (player.fire()) {
                 // spawn projectile
-                Bounds objectBounds = player.getShape().getBoundsInParent();
-                double cx = objectBounds.getCenterX();
-                double cy = objectBounds.getCenterY();
-                Projectile p = new Projectile(DemoGame.this, 120);
-                getChildren().add(p.getShape());
-                // move to center of ship
-                p.rotate(player.getDirectionInDegrees());
-                p.update();
-                Bounds pBounds = p.getShape().getBoundsInParent();
-                double pcx = pBounds.getCenterX();
-                double pcy = pBounds.getCenterY();
-                p.move(new Point2D(cx - pcx, cy - pcy));
-                // move to the tip of the ship
-                p.move(player.getDirection().multiply(10));
-                p.setVelocity(player.getDirection().multiply(5));
-                projectiles.add(p);
+                spawnProjectile();
             }
         });
 
@@ -129,7 +121,10 @@ public class DemoGame extends Game {
 
             }
             if (a.collidesWith(player)) {
-                // pause();
+                waitingForInteraction = true;
+                lives--;
+                gameScreen.displayLives(lives);
+                gameScreen.displayInfo("PRESS ANY KEY\nTO CONTINUE");
             }
             
             for (Projectile p : projectiles) {
@@ -167,6 +162,7 @@ public class DemoGame extends Game {
         }
         
         asteroids.removeAll(asteroidsToRemove);
+        // 30000 per round
         for (Asteroid a : asteroidsToRemove) {
             getChildren().remove(a.getShape());
             switch(a.getType()) {
@@ -192,6 +188,60 @@ public class DemoGame extends Game {
         // update game screen
         gameScreen.displayScore(score);
     } // update
+    
+    /**
+     * Spawns a new projectile from the player's ship.
+     */
+    private void spawnProjectile() {
+        // get the central coordinates of the ship
+        Bounds shipBounds = player.getShape().getBoundsInParent();
+        double scx = shipBounds.getCenterX();
+        double scy = shipBounds.getCenterY();
+        // create a projectile with ~2s display time
+        Projectile p = new Projectile(DemoGame.this, 120);
+        // get the central coordinates of the projectile
+        Bounds pBounds = p.getShape().getBoundsInParent();
+        double pcx = pBounds.getCenterX();
+        double pcy = pBounds.getCenterY();
+        // move the projectile to the center of the ship
+        p.move(new Point2D(scx - pcx, scy - pcy));
+        // move the projectile closer to the front of the ship
+        p.move(player.getDirection().multiply(10));
+        // velocity vector should point to the direction the ship is facing
+        p.setVelocity(player.getDirection().multiply(7));
+        // also rotate the projectile itself
+        p.rotate(player.getDirectionInDegrees());
+        p.update();
+        // manage the projectile
+        getChildren().add(p.getShape());
+        projectiles.add(p);
+    }
+    
+    /**
+     * Spawns the initial asteroids at the start of a round.
+     */
+    private void spawnInitialAsteroids() {
+        for (int i = 0; i < 5; i++) {
+            // create a new large asteroid
+            Asteroid asteroid = new Asteroid(this, AsteroidType.LARGE);
+            // get central coordinates of the game area
+            double centerX = getWidth() / 2;
+            double centerY = getHeight() / 2;
+            double x = centerX;
+            double y = centerY;
+            // try random spawn points until they are not in the central 200x200 box
+            while (Math.abs(x - centerX) < 100 || Math.abs(y - centerY) < 100) {
+                x = rnd.nextDouble(getWidth());
+                y = rnd.nextDouble(getHeight());
+            }
+            asteroid.move(new Point2D(x, y));
+            asteroid.randomizeMovement();
+            // manage the asteroid
+            getChildren().add(asteroid.getShape());
+            asteroids.add(asteroid);
+        }
+    }
+    
 
 //    /**
 //     * Rotates the ship towards the mouse cursor.
