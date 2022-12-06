@@ -1,6 +1,5 @@
 package cs1302.game;
 
-import java.util.Arrays;
 import java.util.Random;
 
 import javafx.geometry.Point2D;
@@ -15,43 +14,95 @@ import javafx.scene.shape.Polygon;
  */
 public class Asteroid extends AnimatedObject {
 
+    /**
+     * Asteroid type.
+     */
     public static enum AsteroidType {
         SMALL, MEDIUM, LARGE
     };
 
-    private static final Image ASTEROID = new Image(
+    private static final Image IMAGE = new Image(
             "file:resources/game/Generic_Celestia_asteroid_texture.jpg");
-    private static final PixelReader READER = ASTEROID.getPixelReader();
-    private static final int IMG_WIDTH = (int) ASTEROID.getWidth();
-    private static final int IMG_HEIGHT = (int) ASTEROID.getHeight();
+    private static final PixelReader READER = IMAGE.getPixelReader();
 
+    /** The type of this asteroid */
+    private final AsteroidType type;
+
+    /**
+     * Creates a new Asteroid with the specified Game.
+     * 
+     * @param game he game containing this asteroid
+     * @throws NullPointerException if the game is null
+     */
     public Asteroid(Game game) {
         this(game, AsteroidType.LARGE);
     }
 
+    /**
+     * Creates a new Asteroid with the specified Game and AsteroidType.
+     * 
+     * @param game the game containing this asteroid
+     * @param type the type of this asteroid
+     * @throws NullPointerException if the game is null
+     * @throws NullPointerException if the type is null
+     */
     public Asteroid(Game game, AsteroidType type) {
         super(game);
-        int size = 10;
+        this.type = type;
+
+        int size = 0;
         switch (type) {
         case SMALL:
-            size = 20;
+            size = 15;
             break;
         case MEDIUM:
-            size = 40;
+            size = 30;
             break;
         case LARGE:
-            size = 60;
+            size = 50;
         }
 
-        shape = createPolygon(size);
+        shape = getRandomPolygon(size, 15);
 
-        // asteroid objects are using a randomly generated subimage same image as the
+        // asteroid objects are using a randomly generated subimage of same image as the
         // source of background texture
         Random rnd = new Random();
-        int x = rnd.nextInt(IMG_WIDTH - size - 30);
-        int y = rnd.nextInt(IMG_HEIGHT - size - 30);
+        int safety = 30;
+        int x = rnd.nextInt((int) IMAGE.getWidth() - size - safety);
+        int y = rnd.nextInt((int) IMAGE.getHeight() - size - safety);
         WritableImage image = new WritableImage(READER, x, y, size, size);
         shape.setFill(new ImagePattern(image));
+    }
+
+    /**
+     * Returns the type of this asteroid.
+     * 
+     * @return the type
+     */
+    public AsteroidType getType() {
+        return type;
+    }
+
+    /**
+     * Randomizes the constant movement(velocity and spin) of this asteroid.
+     */
+    public void randomizeMovement() {
+        Random rnd = new Random();
+        Point2D baseVelocity = new Point2D(rnd.nextDouble(2) - 1, rnd.nextDouble(2) - 1);
+        double baseSpin = rnd.nextDouble(2.0) - 1.0;
+        switch (type) {
+        case SMALL:
+            spin = baseSpin * 3;
+            velocity = baseVelocity.multiply(3.0);
+            break;
+        case MEDIUM:
+            spin = baseSpin;
+            velocity = baseVelocity;
+            break;
+        case LARGE:
+            spin = baseSpin * 0.4;
+            velocity = baseVelocity.multiply(0.4);
+        }
     }
 
     @Override
@@ -60,17 +111,45 @@ public class Asteroid extends AnimatedObject {
         updatePosition();
     }
 
-    private static Polygon createPolygon(double size) {
+    /**
+     * Creates and returns a new, randomly generated polygon with the specified size
+     * and number of verticles.
+     * 
+     * @param size          radius of a circle containing this asteroid
+     * @param verticleCount the number of verticles of the the polygon
+     * @return the new Polygon
+     */
+    private Polygon getRandomPolygon(int size, int verticleCount) {
 
-        Polygon polygon = new Polygon();
-        double c1 = Math.cos(Math.PI * 2 / 5);
-        double c2 = Math.cos(Math.PI / 5);
-        double s1 = Math.sin(Math.PI * 2 / 5);
-        double s2 = Math.sin(Math.PI * 4 / 5);
+        double[] verticles = new double[verticleCount * 2];
 
-        polygon.getPoints().addAll(size, 0.0, size * c1, -1 * size * s1, -1 * size * c2,
-                -1 * size * s2, -1 * size * c2, size * s2, size * c1, size * s1);
+        Random rnd = new Random();
+        double angleDelta = 360.0 / verticleCount;
+        // angle of the current verticle
+        double angle = 0;
+        // vector length of the previous verticle
+        double prevLength = 3 * (size / 4.0);
+        // allowed difference between two neighoring verticles vectors
+        double allowedDiff = size / 8.0;
 
-        return polygon;
+        for (int index = 0; index < verticleCount; index++) {
+            // length of the vector pointing to the next verticle
+            double length = rnd.nextInt(size / 2) + (size / 2.0);
+            // in order to reduce "spikes", large differences are not allowed
+            if (length + allowedDiff < prevLength) {
+                length = prevLength - allowedDiff;
+            } else if (length - allowedDiff > prevLength) {
+                length = prevLength + allowedDiff;
+            }
+            // construct the next verticle
+            angle += angleDelta;
+            verticles[index * 2] = length * Math.cos(Math.toRadians(angle));
+            verticles[index * 2 + 1] = length * Math.sin(Math.toRadians(angle));
+            ;
+
+            prevLength = length;
+        }
+
+        return new Polygon(verticles);
     }
 }
