@@ -9,10 +9,7 @@ import cs1302.game.Asteroid.AsteroidType;
 import cs1302.omega.GameScreen;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
-import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.shape.Shape;
 
 /**
  * An example of a simple game in JavaFX. The play can move the rectangle
@@ -88,7 +85,6 @@ public class DemoGame extends Game {
         // update player position
         isKeyPressed(KeyCode.LEFT, () -> player.move(new Point2D(-10, 0)));
         isKeyPressed(KeyCode.RIGHT, () -> player.move(new Point2D(10, 0)));
-
         // update player position
         isKeyPressed(KeyCode.UP, () -> player.move(new Point2D(0, -10)));
         isKeyPressed(KeyCode.DOWN, () -> player.move(new Point2D(0, 10)));
@@ -125,28 +121,30 @@ public class DemoGame extends Game {
         }
         
         updateAsteroids();
-
         updateProjectiles();
         // update game screen
         gameScreen.displayScore(score);
     } // update
 
+    /**
+     * Updates the asteroids.
+     */
     private void updateAsteroids() {
         List<Asteroid> asteroidsToRemove = new ArrayList<>();
         List<Asteroid> asteroidsToAdd = new ArrayList<>();
 
         for (Asteroid asteroid : asteroids) {
             asteroid.update();
-
+            // collision with player
             if (asteroid.collidesWith(player)) {
                 handlePlayerCollision();
             }
-
+            // collision with projectile
             for (Projectile p : projectiles) {
                 if (asteroid.collidesWith(p)) {
-                    p.setTimeLeft(0);
-                    asteroidsToRemove.add(asteroid);
+                    // split asteroid
                     List<Asteroid> newAsteroids = asteroid.split();
+                    // get the central coordinates of the asteroid
                     Bounds objectBounds = asteroid.getShape().getBoundsInParent();
                     double cx = objectBounds.getCenterX();
                     double cy = objectBounds.getCenterY();
@@ -156,19 +154,23 @@ public class DemoGame extends Game {
                                 rnd.nextDouble(10) - 5));
                         aa.randomizeMovement();
                     }
-
+                    // projectile will disappear in the next update
+                    p.setTimeLeft(0);
+                    // remove destroyed asteroid
+                    asteroidsToRemove.add(asteroid);
+                    // add new asteroids
                     asteroidsToAdd.addAll(newAsteroids);
+                    // asteroid is already destroyed, break out from the loop
+                    break;
                 }
             }
         }
-
         // handle destroyed asteroids
         asteroids.removeAll(asteroidsToRemove);
         for (Asteroid asteroid : asteroidsToRemove) {
             getChildren().remove(asteroid.getShape());
             increaseScore(asteroid);
         }
-
         // manage the new asteroids
         asteroids.addAll(asteroidsToAdd);
         for (Asteroid a : asteroidsToAdd) {
@@ -176,9 +178,13 @@ public class DemoGame extends Game {
         }
     }
 
+    /**
+     * Updates the projectiles.
+     */
     private void updateProjectiles() {
         List<Projectile> projectilesToRemove = new ArrayList<>();
         for (Projectile p : projectiles) {
+            // remove projectiles with no display time left
             if (p.getTimeLeft() == 0) {
                 projectilesToRemove.add(p);
                 getChildren().remove(p.getShape());
@@ -189,15 +195,34 @@ public class DemoGame extends Game {
         projectiles.removeAll(projectilesToRemove);
     }
 
+    /**
+     * Handles player collision.
+     */
     private void handlePlayerCollision() {
         if (shipInvulnerable == 0) {
-            waitingForInteraction = true;
             lives--;
-            gameScreen.displayInfo("PRESS ENTER\nTO CONTINUE");
-            shipInvulnerable = 300;
+            if (lives != 0) {
+                // 5s invulnerability after death
+                shipInvulnerable = 300;
+                // pause and wait for player interaction
+                waitingForInteraction = true;
+                gameScreen.displayInfo("PRESS ENTER\nTO CONTINUE");
+            } else {
+                // end the game if no more lives are left
+                handleGameEnd();
+            }
         }
     }
+    
+    private void handleGameEnd() {
+        // TODO
+    }
 
+    /**
+     * Increases the score based on the specified destroyed asteroid.
+     * 
+     * @param asteroid the destroyed asteroid
+     */
     private void increaseScore(Asteroid asteroid) {
         // overall score should be 30000 per round
         switch (asteroid.getType()) {
@@ -215,25 +240,32 @@ public class DemoGame extends Game {
         }
     }
     
+    /**
+     * Handle the end of a round.
+     */
     private void handleRoundEnd() {
-        shipInvulnerable = 300;
+        // add 20000 score for finishing the round
         score += 20000;
-        
+        // add one life or 20000 score
         if (lives == 5) {
             score += 20000;
         } else {
             lives++;
         }
-        
+        // remove everything from the game area
         projectiles.clear();
         getChildren().clear();
+        // add initial asteroids
         spawnInitialAsteroids();
         update();
-        
+        // re-add player
+        getChildren().add(player.getShape());
+        // new round starts with 5s invulnerability
+        shipInvulnerable = 300;
+        // pause
         gameScreen.displayLives(lives);
         gameScreen.displayInfo("PRESS ENTER\nTO CONTINUE");
         waitingForInteraction = true;
-        getChildren().add(player.getShape());
     }
 
     /**
