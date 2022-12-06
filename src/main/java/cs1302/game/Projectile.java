@@ -15,7 +15,7 @@ public class Projectile extends AnimatedObject {
 
     /**
      * Creates a new Projectile with the specified Game end display time. Negative
-     * display time is treated as ZERO(no display time).
+     * display time is treated as 0.
      * 
      * @param game        the game containing this projectile
      * @param displayTime the display time
@@ -35,6 +35,16 @@ public class Projectile extends AnimatedObject {
      */
     public int getTimeLeft() {
         return timeLeft;
+    }
+
+    /**
+     * Sets the display time of this projectile. Negative display time is treated as
+     * 0.
+     * 
+     * @param timeLeft the new display time
+     */
+    public void setTimeLeft(int timeLeft) {
+        this.timeLeft = Math.max(0, timeLeft);;
     }
 
     @Override

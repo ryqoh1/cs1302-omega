@@ -26,9 +26,8 @@ public class DemoGame extends Game {
     private int score = 0;
     private int lives = 3;
     private boolean waitingForInteraction;
-    private boolean shipInvulnerable;
-    int c = 1;
-    
+    private int shipInvulnerable;
+
     private GameScreen gameScreen;
 
     /**
@@ -64,7 +63,7 @@ public class DemoGame extends Game {
     /** {@inheritDoc} */
     @Override
     protected void update() {
-        
+
         if (waitingForInteraction) {
             if (isAnyKeyPressed()) {
                 waitingForInteraction = false;
@@ -107,88 +106,100 @@ public class DemoGame extends Game {
         }
 
         player.update();
+        shipInvulnerable = Math.max(0, shipInvulnerable - 1);
 
-        List<Projectile> projectilesToRemove = new ArrayList<>();
+        updateAsteroids();
+
+        updateProjectiles();
+        // update game screen
+        gameScreen.displayScore(score);
+    } // update
+
+    private void updateAsteroids() {
         List<Asteroid> asteroidsToRemove = new ArrayList<>();
         List<Asteroid> asteroidsToAdd = new ArrayList<>();
 
-        
-        for (Asteroid a : asteroids) {
-            c--;
-            if (c == 0) {
-                a.update();
-                c = 1;
+        for (Asteroid asteroid : asteroids) {
+            asteroid.update();
 
+            if (asteroid.collidesWith(player)) {
+                handlePlayerCollision();
             }
-            if (a.collidesWith(player)) {
-                waitingForInteraction = true;
-                lives--;
-                gameScreen.displayLives(lives);
-                gameScreen.displayInfo("PRESS ANY KEY\nTO CONTINUE");
-            }
-            
+
             for (Projectile p : projectiles) {
-                if (a.collidesWith(p)) {
-                    projectilesToRemove.add(p);
-                    asteroidsToRemove.add(a);
-                    List<Asteroid> newAsteroids = a.split();
-                    Bounds objectBounds = a.getShape().getBoundsInParent();
+                if (asteroid.collidesWith(p)) {
+                    p.setTimeLeft(0);
+                    asteroidsToRemove.add(asteroid);
+                    List<Asteroid> newAsteroids = asteroid.split();
+                    Bounds objectBounds = asteroid.getShape().getBoundsInParent();
                     double cx = objectBounds.getCenterX();
                     double cy = objectBounds.getCenterY();
                     for (Asteroid aa : newAsteroids) {
                         aa.move(new Point2D(cx, cy));
-                        aa.move(new Point2D(rnd.nextDouble(10) - 5, rnd.nextDouble(10) - 5));
+                        aa.move(new Point2D(rnd.nextDouble(10) - 5,
+                                rnd.nextDouble(10) - 5));
                         aa.randomizeMovement();
                     }
-                    
-                    
+
                     asteroidsToAdd.addAll(newAsteroids);
                 }
             }
         }
 
-        projectiles.removeAll(projectilesToRemove);
-        
+        // handle destroyed asteroids
+        asteroids.removeAll(asteroidsToRemove);
+        for (Asteroid asteroid : asteroidsToRemove) {
+            getChildren().remove(asteroid.getShape());
+            increaseScore(asteroid);
+        }
+
+        // manage the new asteroids
+        asteroids.addAll(asteroidsToAdd);
+        for (Asteroid a : asteroidsToAdd) {
+            getChildren().add(a.getShape());
+        }
+    }
+
+    private void updateProjectiles() {
+        List<Projectile> projectilesToRemove = new ArrayList<>();
         for (Projectile p : projectiles) {
             if (p.getTimeLeft() == 0) {
                 projectilesToRemove.add(p);
+                getChildren().remove(p.getShape());
             }
             p.update();
         }
 
         projectiles.removeAll(projectilesToRemove);
-        for (Projectile p : projectilesToRemove) {
-            getChildren().remove(p.getShape());
+    }
+
+    private void handlePlayerCollision() {
+        if (shipInvulnerable == 0) {
+            waitingForInteraction = true;
+            lives--;
+            gameScreen.displayLives(lives);
+            gameScreen.displayInfo("PRESS ANY KEY\nTO CONTINUE");
+            shipInvulnerable = 300;
         }
-        
-        asteroids.removeAll(asteroidsToRemove);
-        // 30000 per round
-        for (Asteroid a : asteroidsToRemove) {
-            getChildren().remove(a.getShape());
-            switch(a.getType()) {
-            case LARGE:
-                score += 145;
-                break;
-            case MEDIUM:
-                score += 285;
-                break;
-            case SMALL:
-                score += 500;
-                break;
-            default:
-                throw new IllegalStateException("unhandled enum type");
-            }
+    }
+
+    private void increaseScore(Asteroid asteroid) {
+        // overall score should be 30000 per round
+        switch (asteroid.getType()) {
+        case LARGE:
+            score += 145;
+            break;
+        case MEDIUM:
+            score += 285;
+            break;
+        case SMALL:
+            score += 500;
+            break;
+        default:
+            throw new IllegalStateException("unhandled enum type");
         }
-        
-        asteroids.addAll(asteroidsToAdd);
-        for (Asteroid a : asteroidsToAdd) {
-            getChildren().add(a.getShape());
-        }
-        
-        // update game screen
-        gameScreen.displayScore(score);
-    } // update
-    
+    }
+
     /**
      * Spawns a new projectile from the player's ship.
      */
@@ -216,7 +227,7 @@ public class DemoGame extends Game {
         getChildren().add(p.getShape());
         projectiles.add(p);
     }
-    
+
     /**
      * Spawns the initial asteroids at the start of a round.
      */
@@ -241,7 +252,6 @@ public class DemoGame extends Game {
             asteroids.add(asteroid);
         }
     }
-    
 
 //    /**
 //     * Rotates the ship towards the mouse cursor.
