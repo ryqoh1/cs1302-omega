@@ -201,7 +201,7 @@ public class DemoGame extends Game {
     private void handlePlayerCollision() {
         if (shipInvulnerable == 0) {
             lives--;
-            if (lives != 0) {
+            if (lives > 0) {
                 // 5s invulnerability after death
                 shipInvulnerable = 300;
                 // pause and wait for player interaction
@@ -215,6 +215,7 @@ public class DemoGame extends Game {
     }
     
     private void handleGameEnd() {
+        stop();
         // TODO
     }
 
@@ -300,9 +301,9 @@ public class DemoGame extends Game {
      * Spawns the initial asteroids at the start of a round.
      */
     private void spawnInitialAsteroids() {
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 5; i++) {
             // create a new large asteroid
-            Asteroid asteroid = new Asteroid(this, AsteroidType.SMALL);
+            Asteroid asteroid = new Asteroid(this, AsteroidType.LARGE);
             // get central coordinates of the game area
             double centerX = getWidth() / 2;
             double centerY = getHeight() / 2;
