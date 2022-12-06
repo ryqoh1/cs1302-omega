@@ -20,8 +20,10 @@ public class DemoGame extends Game {
 
     private Ship player;
     private List<Asteroid> asteroids = new ArrayList<>();
+    private List<Projectile> projectiles = new ArrayList<>();
     private Random rnd = new Random();
     int c = 1;
+
     /**
      * Construct a {@code DemoGame} object.
      * 
@@ -34,6 +36,8 @@ public class DemoGame extends Game {
         this.player = new Ship(this);
         // ship should be rendered last
         this.player.getShape().setViewOrder(-1);
+        player.setMaxSpeed(5);
+        player.setWeaponCooldown(30);
     } // DemoGame
 
     /** {@inheritDoc} */
@@ -42,13 +46,11 @@ public class DemoGame extends Game {
         // setup subgraph for this component
         getChildren().addAll(player.getShape());
         player.move(new Point2D(100, 0));
-        for (int i = 0; i < 1; i++) {
-            Asteroid a = new Asteroid(this, AsteroidType.MEDIUM);
+        for (int i = 0; i < 5; i++) {
+            Asteroid a = new Asteroid(this, AsteroidType.LARGE);
             asteroids.add(a);
             a.move(new Point2D(rnd.nextDouble(500 - 50), rnd.nextDouble(500 - 50)));
-            a.setVelocity(new Point2D(-1, 0));
-            a.setSpin((rnd.nextDouble(1)));
-            System.out.println(a.getVelocity());
+            a.randomizeMovement();
             getChildren().add(a.getShape());
         }
     } // init
@@ -56,6 +58,28 @@ public class DemoGame extends Game {
     /** {@inheritDoc} */
     @Override
     protected void update() {
+
+        isKeyPressed(KeyCode.SPACE, () -> {
+            if (player.fire()) {
+                // spawn projectile
+                Bounds objectBounds = player.getShape().getBoundsInParent();
+                double cx = objectBounds.getCenterX();
+                double cy = objectBounds.getCenterY();
+                Projectile p = new Projectile(DemoGame.this, 120);
+                getChildren().add(p.getShape());
+                // move to center of ship
+                p.rotate(player.getDirectionInDegrees());
+                p.update();
+                Bounds pBounds = p.getShape().getBoundsInParent();
+                double pcx = pBounds.getCenterX();
+                double pcy = pBounds.getCenterY();
+                p.move(new Point2D(cx - pcx, cy - pcy));
+                // move to the tip of the ship
+                p.move(player.getDirection().multiply(10));
+                p.setVelocity(player.getDirection().multiply(5));
+                projectiles.add(p);
+            }
+        });
 
         // update player position
         isKeyPressed(KeyCode.LEFT, () -> player.move(new Point2D(-10, 0)));
@@ -82,19 +106,27 @@ public class DemoGame extends Game {
         } else {
             player.setEnginesOn(true);
         }
-        
+
         player.update();
 
         for (Asteroid a : asteroids) {
-            c --;
+            c--;
             if (c == 0) {
                 a.update();
                 c = 1;
 
             }
             if (a.collidesWith(player)) {
-                pause();
+                // pause();
             }
+            
+        }
+
+        for (Projectile p : projectiles) {
+            if (p.getTimeLeft() == 0) {
+                getChildren().remove(p.getShape());
+            }
+            p.update();
         }
 
     } // update
@@ -160,8 +192,6 @@ public class DemoGame extends Game {
 //
 //    }
 
-    
-    
     private double getAngle(Point2D p1, Point2D p2) {
         double theta = Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());
         double angle = Math.toDegrees(theta);

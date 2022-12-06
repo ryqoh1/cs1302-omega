@@ -16,25 +16,26 @@ public class Ship extends AnimatedObject {
     private static final ImagePattern SHIP_OFF = new ImagePattern(
             new Image("file:resources/game/ship_r.png"));
 
-    private static final int SHIP_WIDTH = 30;
-    private static final int SHIP_HEIGHT = 30;
+    private static final int DEFAULT_WEAPON_COOLDOWN = 60;
 
-    private static final int FIRE_DELAY = 60;
-
+    /** Whether the engines are on or not */
     private boolean enginesOn;
+    /** Cooldown remaining until the weapon can be fired */
+    private int cooldownRemaining;
+    /** The weapon cooldown */
+    private int weaponCooldown;
 
     /**
      * Creates a new Ship with the specified Game.
      * 
-     * @param game
+     * @param game he game containing this ship
      * @throws NullPointerException if the game is null
      */
     public Ship(Game game) {
         super(game);
         // this polygon covers roughly the same area as the visible pixels of the
         // ship image
-        Polygon shipShape = new Polygon();
-        shipShape.getPoints().addAll(0.0, 0.0, //
+        Polygon shipShape = new Polygon(0.0, 0.0, //
                 12.0, 0.0, //
                 21.0, 4.0, //
                 30.0, 13.0, //
@@ -45,8 +46,11 @@ public class Ship extends AnimatedObject {
                 0.0, 0.0);
         shape = shipShape;
         shape.setFill(SHIP_OFF);
+        // defaults
         setMaxSpeed(10);
         enginesOn = false;
+        weaponCooldown = DEFAULT_WEAPON_COOLDOWN;
+        cooldownRemaining = DEFAULT_WEAPON_COOLDOWN;
     }
 
     /**
@@ -68,8 +72,33 @@ public class Ship extends AnimatedObject {
         return enginesOn;
     }
 
+    /**
+     * Sets the weapon cooldown of this ship. Negative values are treated as zero(no
+     * cooldown).
+     * 
+     * @param cooldown
+     */
+    public void setWeaponCooldown(int cooldown) {
+        weaponCooldown = cooldown;
+    }
+
+    /**
+     * Attempts to fire the ship's weapon and returns the result of the operation.
+     * 
+     * @return {@code true} if the weapon was successfully fired, {@code false} otherwise.
+     */
+    public boolean fire() {
+        if (cooldownRemaining != 0) {
+            return false;
+        } else {
+            cooldownRemaining = Math.max(0, weaponCooldown);
+            return true;
+        }
+    }
+
     @Override
     public void update() {
+        // accelerate if the engines are on
         if (enginesOn) {
             changeVelocity(getDirection().multiply(0.1));
             shape.setFill(SHIP_ON);
@@ -81,6 +110,7 @@ public class Ship extends AnimatedObject {
         updateDirection();
         // position
         updatePosition();
+        cooldownRemaining = Math.max(0, cooldownRemaining - 1);
     }
 
 }
