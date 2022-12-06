@@ -9,6 +9,7 @@ import cs1302.game.Asteroid.AsteroidType;
 import cs1302.omega.GameScreen;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Shape;
@@ -71,6 +72,11 @@ public class DemoGame extends Game {
             }
             return;
         }
+        
+        if (asteroids.isEmpty()) {
+            handleRoundEnd();
+            return;
+        }
 
         if (shipInvulnerable == 0 && isKeyPressed(KeyCode.SPACE)) {
             if (player.fire()) {
@@ -111,8 +117,10 @@ public class DemoGame extends Game {
         if (shipInvulnerable > 0) {
             if ((shipInvulnerable / 20) % 2 == 0) {
                 player.getShape().setVisible(true);
+                gameScreen.displayLives(lives);
             } else {
                 player.getShape().setVisible(false);
+                gameScreen.displayLives(0);
             }
         }
         
@@ -185,7 +193,6 @@ public class DemoGame extends Game {
         if (shipInvulnerable == 0) {
             waitingForInteraction = true;
             lives--;
-            gameScreen.displayLives(lives);
             gameScreen.displayInfo("PRESS ENTER\nTO CONTINUE");
             shipInvulnerable = 300;
         }
@@ -206,6 +213,27 @@ public class DemoGame extends Game {
         default:
             throw new IllegalStateException("unhandled enum type");
         }
+    }
+    
+    private void handleRoundEnd() {
+        shipInvulnerable = 300;
+        score += 20000;
+        
+        if (lives == 5) {
+            score += 20000;
+        } else {
+            lives++;
+        }
+        
+        projectiles.clear();
+        getChildren().clear();
+        spawnInitialAsteroids();
+        update();
+        
+        gameScreen.displayLives(lives);
+        gameScreen.displayInfo("PRESS ENTER\nTO CONTINUE");
+        waitingForInteraction = true;
+        getChildren().add(player.getShape());
     }
 
     /**
@@ -240,9 +268,9 @@ public class DemoGame extends Game {
      * Spawns the initial asteroids at the start of a round.
      */
     private void spawnInitialAsteroids() {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 1; i++) {
             // create a new large asteroid
-            Asteroid asteroid = new Asteroid(this, AsteroidType.LARGE);
+            Asteroid asteroid = new Asteroid(this, AsteroidType.SMALL);
             // get central coordinates of the game area
             double centerX = getWidth() / 2;
             double centerY = getHeight() / 2;
