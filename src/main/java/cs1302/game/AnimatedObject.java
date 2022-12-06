@@ -68,7 +68,7 @@ public abstract class AnimatedObject {
     }
 
     /**
-     * Sets the velocity of this object to the specified value. If {@code maxSpeed}
+     * Sets the velocity of this object to the specified value. If {@link #maxSpeed}
      * is set, the velocity vector's magnitude(length) may be reduced to not exceed
      * this value.
      * 
@@ -79,8 +79,8 @@ public abstract class AnimatedObject {
         Objects.requireNonNull(velocity);
         double speed = velocity.magnitude();
         double mult = 1;
-        if (Math.abs(speed) > 10) {
-            mult = 10 / Math.abs(speed);
+        if (Math.abs(speed) > maxSpeed) {
+            mult = maxSpeed / Math.abs(speed);
         }
         this.velocity = velocity.multiply(mult);
     }
@@ -96,10 +96,10 @@ public abstract class AnimatedObject {
 
     /**
      * Changes the velocity of this object by the specified value. If
-     * {@code maxSpeed} is set, the velocity vector's magnitude(length) may be
+     * {@link #maxSpeed} is set, the velocity vector's magnitude(length) may be
      * reduced to not exceed this value.
      * 
-     * @param delta
+     * @param delta the change
      * @throws NullPointerException if {@code delta} is null
      */
     public void changeVelocity(Point2D delta) {
@@ -107,8 +107,8 @@ public abstract class AnimatedObject {
         Point2D newVelocity = velocity.add(delta);
         double speed = newVelocity.magnitude();
         double mult = 1;
-        if (Math.abs(speed) > 10) {
-            mult = 10 / Math.abs(speed);
+        if (Math.abs(speed) > maxSpeed) {
+            mult = maxSpeed / Math.abs(speed);
         }
         velocity = newVelocity.multiply(mult);
     }
@@ -188,15 +188,15 @@ public abstract class AnimatedObject {
     }
 
     /**
-     * Returns a vector with a length of 1.0 and direction the same as this object's
+     * Returns a vector with the length of 1.0 and direction the same as this object's
      * direction.
      * 
      * @return the direction
      */
     public Point2D getDirection() {
-        double changeX = Math.cos(Math.toRadians(direction));
-        double changeY = Math.sin(Math.toRadians(direction));
-        return new Point2D(changeX, changeY);
+        double x = Math.cos(Math.toRadians(direction));
+        double y = Math.sin(Math.toRadians(direction));
+        return new Point2D(x, y);
     }
 
     /**
@@ -222,37 +222,50 @@ public abstract class AnimatedObject {
     }
 
     /**
+     * Returns {@code true} if this object collides with the specified object.
+     * 
+     * @param other the other object
+     * @return {@code true} if the two objects collide, {@code false} otherwise
+     * @throws NullPointerException if other is null
+     */
+    public boolean collidesWith(AnimatedObject other) {
+        Shape otherShape = other.getShape();
+        Shape intersection = Shape.intersect(shape, otherShape);
+        return !intersection.getBoundsInLocal().isEmpty();
+    }
+
+    /**
      * Wraps this object around if it would leave the game area otherwise.
      */
-    private void wrap() {
+    protected void wrap() {
         Bounds gameBounds = game.getGameBounds();
         Bounds objectBounds = shape.getBoundsInParent();
         Bounds localBounds = shape.getBoundsInLocal();
-        // center coodinates relative to the game area
-        double x = objectBounds.getCenterX();
-        double y = objectBounds.getCenterY();
+        // central coodinates relative to the game area
+        double cx = objectBounds.getCenterX();
+        double cy = objectBounds.getCenterY();
         // size of the Bounds box around the shape
         double w = localBounds.getWidth();
         double h = localBounds.getHeight();
         // wrapAt is the percent of the object that should remain visible before
         // wrapping it around
-        double wBeforeWrap = w * (wrapAt / 100) / 2;
-        double hBeforeWrap = h * (wrapAt / 100) / 2;
+        double wBeforeWrap = w * (wrapAt / 100);
+        double hBeforeWrap = h * (wrapAt / 100);
         // objects are wrapped around when they are out of the game area by more than
         // the above specified amount
         // objects appear on the other side, also slightly out of the game area
         // in order to make the transition more visually pleasing
         // horizontal wrapping
-        if (x - wBeforeWrap > gameBounds.getMaxX()) {
-            shape.relocate(-(w - wBeforeWrap), objectBounds.getMinY());
-        } else if (x + wBeforeWrap < gameBounds.getMinX()) {
-            shape.relocate(gameBounds.getMaxX() - wBeforeWrap, objectBounds.getMinY());
+        if (cx - wBeforeWrap > gameBounds.getMaxX()) {
+            shape.setTranslateX(-wBeforeWrap);
+        } else if (cx + wBeforeWrap < gameBounds.getMinX()) {
+            shape.setTranslateX(gameBounds.getMaxX() - wBeforeWrap);
         }
         // vertical wrapping
-        if (y - hBeforeWrap > gameBounds.getMaxY()) {
-            shape.relocate(objectBounds.getMinX(), -(h - hBeforeWrap));
-        } else if (y + hBeforeWrap < gameBounds.getMinY()) {
-            shape.relocate(objectBounds.getMinX(), gameBounds.getMaxY() - hBeforeWrap);
+        if (cy - hBeforeWrap > gameBounds.getMaxY()) {
+            shape.setTranslateY(-hBeforeWrap);
+        } else if (cy + hBeforeWrap < gameBounds.getMinY()) {
+            shape.setTranslateY(gameBounds.getMaxY() - hBeforeWrap);
         }
     }
 
@@ -281,9 +294,10 @@ public abstract class AnimatedObject {
         // clear instant movement
         movement = ZERO_MOVEMENT;
         // set new position
-        double x = shape.getLayoutX();
-        double y = shape.getLayoutY();
-        shape.relocate(x + delta.getX(), y + delta.getY());
+        double x = shape.getTranslateX() + delta.getX();
+        double y = shape.getTranslateY() + delta.getY();
+        shape.setTranslateX(x);
+        shape.setTranslateY(y);
         // wrap if needed
         wrap();
     }

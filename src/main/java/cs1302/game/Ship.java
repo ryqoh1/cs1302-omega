@@ -2,7 +2,7 @@ package cs1302.game;
 
 import javafx.scene.image.Image;
 import javafx.scene.paint.ImagePattern;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Polygon;
 
 /**
  * An animated object representing the player's ship.
@@ -31,7 +31,19 @@ public class Ship extends AnimatedObject {
      */
     public Ship(Game game) {
         super(game);
-        shape = new Rectangle(SHIP_WIDTH, SHIP_HEIGHT);
+        // this polygon covers roughly the same area as the visible pixels of the
+        // ship image
+        Polygon shipShape = new Polygon();
+        shipShape.getPoints().addAll(0.0, 0.0, //
+                12.0, 0.0, //
+                21.0, 4.0, //
+                30.0, 13.0, //
+                30.0, 15.0, //
+                21.0, 26.0, //
+                12.0, 30.0, //
+                0.0, 30.0, //
+                0.0, 0.0);
+        shape = shipShape;
         shape.setFill(SHIP_OFF);
         setMaxSpeed(10);
         enginesOn = false;

@@ -1,7 +1,11 @@
 package cs1302.game;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 
+import cs1302.game.Asteroid.AsteroidType;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.input.KeyCode;
@@ -15,7 +19,9 @@ import javafx.scene.shape.Shape;
 public class DemoGame extends Game {
 
     private Ship player;
-
+    private List<Asteroid> asteroids = new ArrayList<>();
+    private Random rnd = new Random();
+    int c = 1;
     /**
      * Construct a {@code DemoGame} object.
      * 
@@ -26,6 +32,8 @@ public class DemoGame extends Game {
         super(width, height, 60); // call parent constructor
         setLogLevel(Level.INFO); // enable logging
         this.player = new Ship(this);
+        // ship should be rendered last
+        this.player.getShape().setViewOrder(-1);
     } // DemoGame
 
     /** {@inheritDoc} */
@@ -33,7 +41,16 @@ public class DemoGame extends Game {
     protected void init() {
         // setup subgraph for this component
         getChildren().addAll(player.getShape());
-        player.move(new Point2D(0, 0));
+        player.move(new Point2D(100, 0));
+        for (int i = 0; i < 1; i++) {
+            Asteroid a = new Asteroid(this, AsteroidType.MEDIUM);
+            asteroids.add(a);
+            a.move(new Point2D(rnd.nextDouble(500 - 50), rnd.nextDouble(500 - 50)));
+            a.setVelocity(new Point2D(-1, 0));
+            a.setSpin((rnd.nextDouble(1)));
+            System.out.println(a.getVelocity());
+            getChildren().add(a.getShape());
+        }
     } // init
 
     /** {@inheritDoc} */
@@ -65,8 +82,20 @@ public class DemoGame extends Game {
         } else {
             player.setEnginesOn(true);
         }
-
+        
         player.update();
+
+        for (Asteroid a : asteroids) {
+            c --;
+            if (c == 0) {
+                a.update();
+                c = 1;
+
+            }
+            if (a.collidesWith(player)) {
+                pause();
+            }
+        }
 
     } // update
 
