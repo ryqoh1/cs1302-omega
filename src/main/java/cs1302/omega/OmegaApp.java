@@ -50,7 +50,6 @@ public class OmegaApp extends Application {
     /** {@inheritDoc} */
     @Override
     public void start(Stage stage) {
-
         this.stage = stage;
 
         initMainMenu();
@@ -69,12 +68,13 @@ public class OmegaApp extends Application {
 
     public void afterGame(int score) {
         if (highScoreScreen.canAddRecord(score)) {
-            
+            highScoreScreen.addRecord(score);
+            stage.setScene(highScoreScreen.getScene());
         } else {
             stage.setScene(mainMenu);
         }
     }
-    
+
     /**
      * Initializes the main menu screen.
      */
@@ -88,7 +88,7 @@ public class OmegaApp extends Application {
         });
         // high scores
         Text highScore = getMainMenuItem("HIGH SCORES");
-        highScore.setOnMouseClicked(event -> System.out.println("unimplemented"));
+        highScore.setOnMouseClicked(event -> stage.setScene(highScoreScreen.getScene()));
         // settings
         Text settings = getMainMenuItem("SETTINGS");
         settings.setOnMouseClicked(event -> System.out.println("unimplemented"));
