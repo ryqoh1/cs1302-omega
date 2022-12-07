@@ -216,6 +216,7 @@ public class DemoGame extends Game {
     
     private void handleGameEnd() {
         stop();
+        gameScreen.afterGame(score);
         // TODO
     }
 

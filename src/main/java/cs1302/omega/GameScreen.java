@@ -44,6 +44,7 @@ public class GameScreen {
     private Text score;
     private Text info;
     private List<ImageView> lives;
+    private OmegaApp app;
 
     /**
      * Creates a new GameScreen with the specified {@code width} and {@code height}.
@@ -53,7 +54,8 @@ public class GameScreen {
      * @param width
      * @param height
      */
-    public GameScreen(int width, int height) {
+    public GameScreen(int width, int height, OmegaApp app) {
+        this.app = app;
         initGameScreen(width, height);
     }
 
@@ -160,8 +162,12 @@ public class GameScreen {
     /**
      * Activates the game.
      */
-    public void play() {
+    public void show() {
         game.play();
+    }
+    
+    public void afterGame(int score) {
+        app.afterGame(score);
     }
 
     /**

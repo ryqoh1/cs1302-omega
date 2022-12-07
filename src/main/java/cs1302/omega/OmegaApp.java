@@ -31,8 +31,8 @@ public class OmegaApp extends Application {
     public static final Font F14 = Font.font("C059", FontWeight.NORMAL, 14);
 
     Scene mainMenu;
-
     Stage stage;
+    HighScoreScreen highScoreScreen;
 
     /**
      * Constructs an {@code OmegaApp} object. This default (i.e., no argument)
@@ -54,6 +54,7 @@ public class OmegaApp extends Application {
         this.stage = stage;
 
         initMainMenu();
+        highScoreScreen = new HighScoreScreen(SCENE_WIDTH, SCENE_HEIGHT);
 
         // setup stage
         stage.setTitle("Asteroids!");
@@ -61,32 +62,40 @@ public class OmegaApp extends Application {
         stage.setOnCloseRequest(event -> Platform.exit());
         stage.sizeToScene();
         stage.show();
+        Platform.runLater(() -> stage.setResizable(false));
         System.out.println(stage.getHeight() + " " + stage.getWidth());
         System.out.println(mainMenu.getHeight() + " " + mainMenu.getWidth());
-        Platform.runLater(() -> stage.setResizable(false));
     } // start
 
+    public void afterGame(int score) {
+        if (highScoreScreen.canAddRecord(score)) {
+            
+        } else {
+            stage.setScene(mainMenu);
+        }
+    }
+    
     /**
      * Initializes the main menu screen.
      */
     private void initMainMenu() {
-        // Menu item that start a new game
+        // new game
         Text newGame = getMainMenuItem("NEW GAME");
         newGame.setOnMouseClicked(event -> {
-            GameScreen gs = new GameScreen(SCENE_WIDTH, SCENE_HEIGHT);
+            GameScreen gs = new GameScreen(SCENE_WIDTH, SCENE_HEIGHT, this);
             stage.setScene(gs.getScene());
-            gs.play();
+            gs.show();
         });
-        // Menu item that displays high scores
+        // high scores
         Text highScore = getMainMenuItem("HIGH SCORES");
         highScore.setOnMouseClicked(event -> System.out.println("unimplemented"));
-        // Menu item that displays settings
+        // settings
         Text settings = getMainMenuItem("SETTINGS");
         settings.setOnMouseClicked(event -> System.out.println("unimplemented"));
-        // Menu item that displays help
+        // help
         Text help = getMainMenuItem("HELP");
         help.setOnMouseClicked(event -> System.out.println("unimplemented"));
-        // Menu item that exits the application
+        // exit
         Text exit = getMainMenuItem("EXIT");
         exit.setOnMouseClicked(event -> {
             Node source = (Node) event.getSource();
