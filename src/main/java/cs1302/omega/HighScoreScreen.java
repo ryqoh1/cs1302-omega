@@ -15,22 +15,27 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 
 public class HighScoreScreen {
 
     private static Path HIGHSCORES_FILE = Path.of("resources/highscores");
     private static Path DEFAULT_HIGHSCORES_FILE = Path.of("resources/highscores_default");
+    private static Background BLACK = new Background(new BackgroundFill(Color.BLACK, null, null));
+    
     private Scene scene;
     private List<Record> highScores;
     private TableView<Record> table;
@@ -49,15 +54,86 @@ public class HighScoreScreen {
         TableColumn<Record, String> nameCol = new TableColumn<>("Name");
         TableColumn<Record, LocalDate> dateCol = new TableColumn<>("Date");
 
-        scoreCol.setCellValueFactory(
-                new PropertyValueFactory<Record, Integer>("score"));
+        scoreCol.setCellValueFactory(new PropertyValueFactory<Record, Integer>("score"));
+        scoreCol.setCellFactory(col -> {
+            TableCell<Record, Integer> cell = new TableCell<>() {
+                @Override protected void updateItem(Integer item, boolean empty) {
+                    // calling super here is very important - don't skip this!
+                    super.updateItem(item, empty);
+                    if (!empty) {
+                        setText(String.valueOf(item));
+                    }
+                }
+                
+            };
+            cell.setBackground(BLACK);
+            cell.setTextFill(Color.WHITE);
+            cell.setAlignment(Pos.CENTER);
+            cell.setFont(OmegaApp.F24);
+            return cell;
+        });
         nameCol.setCellValueFactory(new PropertyValueFactory<Record, String>("name"));
+        nameCol.setCellFactory(col -> {
+            TableCell<Record, String> cell = new TableCell<>() {
+                @Override protected void updateItem(String item, boolean empty) {
+                    // calling super here is very important - don't skip this!
+                    super.updateItem(item, empty);
+                    if (!empty) {
+                        setText(String.valueOf(item));
+                    }
+                }
+                
+            };
+            cell.setBackground(BLACK);
+            cell.setTextFill(Color.WHITE);
+            cell.setAlignment(Pos.CENTER);
+            cell.setFont(OmegaApp.F24);
+            return cell;
+        });
         dateCol.setCellValueFactory(new PropertyValueFactory<Record, LocalDate>("date"));
+        dateCol.setCellFactory(col -> {
+            TableCell<Record, LocalDate> cell = new TableCell<>() {
+                @Override protected void updateItem(LocalDate item, boolean empty) {
+                    // calling super here is very important - don't skip this!
+                    super.updateItem(item, empty);
+                    if (!empty) {
+                        setText(String.valueOf(item));
+                    }
+                }
+                
+            };
+            cell.setBackground(BLACK);
+            cell.setTextFill(Color.WHITE);
+            cell.setAlignment(Pos.CENTER);
+            cell.setFont(OmegaApp.F24);
+            return cell;
+        });
         table = new TableView<>(data);
         table.getColumns().add(scoreCol);
         table.getColumns().add(nameCol);
         table.getColumns().add(dateCol);
+        VBox.setVgrow(table, Priority.ALWAYS);
+        table.setStyle("-fx-table-cell-border-color: transparent;");
+
+//        https://stackoverflow.com/questions/27118872/how-to-hide-tableview-column-header-in-javafx-8
+        table.skinProperty().addListener((a, b, newSkin) ->
+        {
+          Pane header = (Pane) table.lookup("TableHeaderRow");
+          header.setMinHeight(0);
+          header.setPrefHeight(0);
+          header.setMaxHeight(0);
+          header.setVisible(false);
+        });
         
+        scoreCol.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
+        nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.4));
+        dateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.296));
+
+        
+        scoreCol.setResizable(false);
+        nameCol.setResizable(false);
+        dateCol.setResizable(false);
+
 
         Text reset = new Text("RESET");
         reset.setFill(Color.WHITE);
@@ -84,7 +160,7 @@ public class HighScoreScreen {
         menu.getChildren().addAll(space1, reset, space2, back, space3);
 
         VBox root = new VBox();
-        root.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
+        root.setBackground(BLACK);
         scene = new Scene(root, width, height);
         root.getChildren().addAll(table, menu);
     }
