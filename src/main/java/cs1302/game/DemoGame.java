@@ -63,10 +63,18 @@ public class DemoGame extends Game {
     protected void update() {
 
         if (waitingForInteraction) {
-            if (isKeyPressed(KeyCode.ENTER)) {
-                waitingForInteraction = false;
-                gameScreen.displayInfo("");
+            if (lives == 0) {
+                if (isKeyPressed(KeyCode.ENTER)) {
+                    // end the game 
+                    handleGameEnd();
+                }
+            } else {
+                if (isKeyPressed(KeyCode.ENTER)) {
+                    waitingForInteraction = false;
+                    gameScreen.displayInfo("");
+                }
             }
+            
             return;
         }
         
@@ -208,14 +216,16 @@ public class DemoGame extends Game {
                 waitingForInteraction = true;
                 gameScreen.displayInfo("PRESS ENTER\nTO CONTINUE");
             } else {
-                // end the game if no more lives are left
-                handleGameEnd();
+                // pause and wait for player interaction
+                waitingForInteraction = true;
+                gameScreen.displayInfo("PRESS ENTER\nTO EXIT GAME");
             }
         }
     }
     
     private void handleGameEnd() {
         stop();
+        gameScreen.afterGame(score);
         // TODO
     }
 

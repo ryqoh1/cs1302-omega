@@ -3,13 +3,14 @@ package cs1302.omega;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -31,8 +32,8 @@ public class OmegaApp extends Application {
     public static final Font F14 = Font.font("C059", FontWeight.NORMAL, 14);
 
     Scene mainMenu;
-
     Stage stage;
+    HighScoreScreen highScoreScreen;
 
     /**
      * Constructs an {@code OmegaApp} object. This default (i.e., no argument)
@@ -50,10 +51,10 @@ public class OmegaApp extends Application {
     /** {@inheritDoc} */
     @Override
     public void start(Stage stage) {
-
         this.stage = stage;
 
         initMainMenu();
+        highScoreScreen = new HighScoreScreen(SCENE_WIDTH, SCENE_HEIGHT, this);
 
         // setup stage
         stage.setTitle("Asteroids!");
@@ -61,49 +62,58 @@ public class OmegaApp extends Application {
         stage.setOnCloseRequest(event -> Platform.exit());
         stage.sizeToScene();
         stage.show();
-        System.out.println(stage.getHeight() + " " + stage.getWidth());
-        System.out.println(mainMenu.getHeight() + " " + mainMenu.getWidth());
         Platform.runLater(() -> stage.setResizable(false));
     } // start
+
+    public void afterGame(int score) {
+        if (highScoreScreen.canAddRecord(score)) {
+            highScoreScreen.addRecord(score);
+            stage.setScene(highScoreScreen.getScene());
+        } else {
+            stage.setScene(mainMenu);
+        }
+    }
+    
+    public void displayMainMenu() {
+        stage.setScene(mainMenu);
+    }
 
     /**
      * Initializes the main menu screen.
      */
     private void initMainMenu() {
-        // Menu item that start a new game
+        // new game
         Text newGame = getMainMenuItem("NEW GAME");
         newGame.setOnMouseClicked(event -> {
-            GameScreen gs = new GameScreen(SCENE_WIDTH, SCENE_HEIGHT);
+            GameScreen gs = new GameScreen(SCENE_WIDTH, SCENE_HEIGHT, this);
             stage.setScene(gs.getScene());
-            gs.play();
+            gs.show();
         });
-        // Menu item that displays high scores
+        // high scores
         Text highScore = getMainMenuItem("HIGH SCORES");
-        highScore.setOnMouseClicked(event -> System.out.println("unimplemented"));
-        // Menu item that displays settings
+        highScore.setOnMouseClicked(event -> stage.setScene(highScoreScreen.getScene()));
+        // settings
         Text settings = getMainMenuItem("SETTINGS");
         settings.setOnMouseClicked(event -> System.out.println("unimplemented"));
-        // Menu item that displays help
+        // help
         Text help = getMainMenuItem("HELP");
         help.setOnMouseClicked(event -> System.out.println("unimplemented"));
-        // Menu item that exits the application
+        // exit
         Text exit = getMainMenuItem("EXIT");
         exit.setOnMouseClicked(event -> {
-            Node source = (Node) event.getSource();
-            Stage window = (Stage) source.getScene().getWindow();
-            window.close();
+            stage.close();
         });
         // an empty space to push the visible elements up a little
         Region empty = new Region();
         empty.setPrefHeight(100);
 
         VBox root = new VBox();
+        root.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
         root.setAlignment(Pos.CENTER);
         root.setSpacing(10);
         root.getChildren().addAll(newGame, highScore, settings, help, exit, empty);
 
         mainMenu = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
-        mainMenu.setFill(Color.BLACK);
     }
 
     /**
