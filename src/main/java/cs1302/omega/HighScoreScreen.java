@@ -13,12 +13,16 @@ import java.util.List;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.HBox;
@@ -29,16 +33,21 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import javafx.util.StringConverter;
+import javafx.util.converter.DefaultStringConverter;
 
 public class HighScoreScreen {
 
     private static Path HIGHSCORES_FILE = Path.of("resources/highscores");
     private static Path DEFAULT_HIGHSCORES_FILE = Path.of("resources/highscores_default");
-    private static Background BLACK = new Background(new BackgroundFill(Color.BLACK, null, null));
-    
+    private static Background BLACK = new Background(
+            new BackgroundFill(Color.BLACK, null, null));
+
     private Scene scene;
     private List<Record> highScores;
     private TableView<Record> table;
+    private int editIndex = -1;
+    TableColumn<Record, String> nameCol;
 
     public HighScoreScreen(int width, int height) {
         highScores = new ArrayList<>();
@@ -51,21 +60,12 @@ public class HighScoreScreen {
         ObservableList<Record> data = FXCollections.observableList(highScores);
 
         TableColumn<Record, Integer> scoreCol = new TableColumn<>("Score");
-        TableColumn<Record, String> nameCol = new TableColumn<>("Name");
+        nameCol = new TableColumn<>("Name");
         TableColumn<Record, LocalDate> dateCol = new TableColumn<>("Date");
 
         scoreCol.setCellValueFactory(new PropertyValueFactory<Record, Integer>("score"));
         scoreCol.setCellFactory(col -> {
-            TableCell<Record, Integer> cell = new TableCell<>() {
-                @Override protected void updateItem(Integer item, boolean empty) {
-                    // calling super here is very important - don't skip this!
-                    super.updateItem(item, empty);
-                    if (!empty) {
-                        setText(String.valueOf(item));
-                    }
-                }
-                
-            };
+            TableCell<Record, Integer> cell = new TextFieldTableCell<>();
             cell.setBackground(BLACK);
             cell.setTextFill(Color.WHITE);
             cell.setAlignment(Pos.CENTER);
@@ -74,34 +74,33 @@ public class HighScoreScreen {
         });
         nameCol.setCellValueFactory(new PropertyValueFactory<Record, String>("name"));
         nameCol.setCellFactory(col -> {
-            TableCell<Record, String> cell = new TableCell<>() {
-                @Override protected void updateItem(String item, boolean empty) {
-                    // calling super here is very important - don't skip this!
-                    super.updateItem(item, empty);
-                    if (!empty) {
-                        setText(String.valueOf(item));
+            TextFieldTableCell<Record, String> cell = new TextFieldTableCell<>() {
+                @Override
+                public void startEdit() {
+                    if (getIndex() != editIndex) {
+                        return;
                     }
+                    super.startEdit();
                 }
-                
             };
+
+            cell.setEditable(true);
+            cell.setConverter(new DefaultStringConverter());
             cell.setBackground(BLACK);
             cell.setTextFill(Color.WHITE);
             cell.setAlignment(Pos.CENTER);
             cell.setFont(OmegaApp.F24);
+            
             return cell;
+        });
+        // https://stackoverflow.com/questions/18721394/can-javafx-tableview-be-partly-editable
+        nameCol.setOnEditCommit(event -> {
+            ((Record) event.getTableView().getItems()
+                    .get(event.getTablePosition().getRow())).setName(event.getNewValue());
         });
         dateCol.setCellValueFactory(new PropertyValueFactory<Record, LocalDate>("date"));
         dateCol.setCellFactory(col -> {
-            TableCell<Record, LocalDate> cell = new TableCell<>() {
-                @Override protected void updateItem(LocalDate item, boolean empty) {
-                    // calling super here is very important - don't skip this!
-                    super.updateItem(item, empty);
-                    if (!empty) {
-                        setText(String.valueOf(item));
-                    }
-                }
-                
-            };
+            TableCell<Record, LocalDate> cell = new TextFieldTableCell<>();
             cell.setBackground(BLACK);
             cell.setTextFill(Color.WHITE);
             cell.setAlignment(Pos.CENTER);
@@ -113,27 +112,26 @@ public class HighScoreScreen {
         table.getColumns().add(nameCol);
         table.getColumns().add(dateCol);
         VBox.setVgrow(table, Priority.ALWAYS);
+        table.setEditable(true);
+        nameCol.setEditable(true);
         table.setStyle("-fx-table-cell-border-color: transparent;");
 
 //        https://stackoverflow.com/questions/27118872/how-to-hide-tableview-column-header-in-javafx-8
-        table.skinProperty().addListener((a, b, newSkin) ->
-        {
-          Pane header = (Pane) table.lookup("TableHeaderRow");
-          header.setMinHeight(0);
-          header.setPrefHeight(0);
-          header.setMaxHeight(0);
-          header.setVisible(false);
+        table.skinProperty().addListener((a, b, newSkin) -> {
+            Pane header = (Pane) table.lookup("TableHeaderRow");
+            header.setMinHeight(0);
+            header.setPrefHeight(0);
+            header.setMaxHeight(0);
+            header.setVisible(false);
         });
-        
+
         scoreCol.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
         nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.4));
         dateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.296));
 
-        
         scoreCol.setResizable(false);
         nameCol.setResizable(false);
         dateCol.setResizable(false);
-
 
         Text reset = new Text("RESET");
         reset.setFill(Color.WHITE);
@@ -179,6 +177,7 @@ public class HighScoreScreen {
             if (score >= highScores.get(i).getScore()) {
                 Record record = new Record(score, "enter name", LocalDate.now());
                 highScores.add(i, record);
+                editIndex = i;
                 break;
             }
         }
@@ -220,7 +219,12 @@ public class HighScoreScreen {
     }
 
     private void reset() {
-
+        try {
+            loadFromFile(DEFAULT_HIGHSCORES_FILE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        table.setItems(FXCollections.observableList(highScores));
     }
 
     public Scene getScene() {
