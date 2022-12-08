@@ -296,6 +296,10 @@ public class HighScoreScreen {
                 LocalDate date = LocalDate.parse(parts[2]);
                 highScores.add(new Record(score, name, date));
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+            // fall back to default
+            loadFromFile(DEFAULT_HIGHSCORES_FILE);
         }
     }
 
@@ -308,8 +312,10 @@ public class HighScoreScreen {
     private void saveToFile(Path filePath) throws IOException {
         // old content of the file should be deleted
         OpenOption truncate = StandardOpenOption.TRUNCATE_EXISTING;
+        // create file if it doesn not exist
+        OpenOption create = StandardOpenOption.CREATE;
         // try with resources
-        try (BufferedWriter w = Files.newBufferedWriter(filePath, truncate)) {
+        try (BufferedWriter w = Files.newBufferedWriter(filePath, create, truncate)) {
             for (int i = 0; i < highScores.size(); i++) {
                 StringBuilder entry = new StringBuilder();
                 entry.append(highScores.get(i).getScore());
