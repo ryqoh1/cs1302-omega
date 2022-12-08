@@ -47,9 +47,11 @@ public class HighScoreScreen {
     private List<Record> highScores;
     private TableView<Record> table;
     private int editIndex = -1;
-    TableColumn<Record, String> nameCol;
+    private TableColumn<Record, String> nameCol;
+    private OmegaApp app;
 
-    public HighScoreScreen(int width, int height) {
+    public HighScoreScreen(int width, int height, OmegaApp app) {
+        this.app = app;
         highScores = new ArrayList<>();
         try {
             loadFromFile(HIGHSCORES_FILE);
@@ -138,13 +140,23 @@ public class HighScoreScreen {
         reset.setFont(OmegaApp.F40);
         reset.setOnMouseEntered(event -> reset.setFill(Color.RED));
         reset.setOnMouseExited(event -> reset.setFill(Color.WHITE));
+        reset.setOnMouseClicked(event -> reset());
+        
+        Text done = new Text("DONE");
+        done.setFill(Color.WHITE);
+        done.setFont(OmegaApp.F40);
+        done.setOnMouseEntered(event -> done.setFill(Color.RED));
+        done.setOnMouseExited(event -> done.setFill(Color.WHITE));
+        done.setOnMouseClicked(event -> {
+            try {
+                saveToFile(HIGHSCORES_FILE);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            app.displayMainMenu();
+        });
 
-        Text back = new Text("BACK");
-        back.setFill(Color.WHITE);
-        back.setFont(OmegaApp.F40);
-        back.setOnMouseEntered(event -> back.setFill(Color.RED));
-        back.setOnMouseExited(event -> back.setFill(Color.WHITE));
-
+        
         Region space1 = new Region();
         HBox.setHgrow(space1, Priority.ALWAYS);
         Region space2 = new Region();
@@ -155,7 +167,7 @@ public class HighScoreScreen {
         HBox menu = new HBox();
         menu.setAlignment(Pos.CENTER);
         menu.setPrefHeight(60);
-        menu.getChildren().addAll(space1, reset, space2, back, space3);
+        menu.getChildren().addAll(space1, reset, space2, done, space3);
 
         VBox root = new VBox();
         root.setBackground(BLACK);
@@ -175,7 +187,7 @@ public class HighScoreScreen {
     public void addRecord(int score) {
         for (int i = 0; i < highScores.size(); i++) {
             if (score >= highScores.get(i).getScore()) {
-                Record record = new Record(score, "enter name", LocalDate.now());
+                Record record = new Record(score, "<ENTER NAME>", LocalDate.now());
                 highScores.add(i, record);
                 editIndex = i;
                 break;
@@ -191,6 +203,7 @@ public class HighScoreScreen {
      * @throws IOException
      */
     private void loadFromFile(Path filePath) throws IOException {
+        highScores.clear();
         try (BufferedReader r = Files.newBufferedReader(filePath)) {
             while (r.ready()) {
                 String line = r.readLine();
@@ -204,7 +217,7 @@ public class HighScoreScreen {
     }
 
     private void saveToFile(Path filePath) throws IOException {
-        OpenOption createNew = StandardOpenOption.CREATE_NEW;
+        OpenOption createNew = StandardOpenOption.TRUNCATE_EXISTING;
         try (BufferedWriter w = Files.newBufferedWriter(filePath, createNew)) {
             for (int i = 0; i < highScores.size(); i++) {
                 StringBuilder entry = new StringBuilder();
@@ -213,6 +226,7 @@ public class HighScoreScreen {
                 entry.append(highScores.get(i).getName());
                 entry.append(',');
                 entry.append(highScores.get(i).getDate());
+                entry.append(System.lineSeparator());
                 w.append(entry);
             }
         }
