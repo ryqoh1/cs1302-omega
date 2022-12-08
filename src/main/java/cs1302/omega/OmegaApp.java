@@ -3,13 +3,14 @@ package cs1302.omega;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -53,7 +54,7 @@ public class OmegaApp extends Application {
         this.stage = stage;
 
         initMainMenu();
-        highScoreScreen = new HighScoreScreen(SCENE_WIDTH, SCENE_HEIGHT);
+        highScoreScreen = new HighScoreScreen(SCENE_WIDTH, SCENE_HEIGHT, this);
 
         // setup stage
         stage.setTitle("Asteroids!");
@@ -62,8 +63,6 @@ public class OmegaApp extends Application {
         stage.sizeToScene();
         stage.show();
         Platform.runLater(() -> stage.setResizable(false));
-        System.out.println(stage.getHeight() + " " + stage.getWidth());
-        System.out.println(mainMenu.getHeight() + " " + mainMenu.getWidth());
     } // start
 
     public void afterGame(int score) {
@@ -73,6 +72,10 @@ public class OmegaApp extends Application {
         } else {
             stage.setScene(mainMenu);
         }
+    }
+    
+    public void displayMainMenu() {
+        stage.setScene(mainMenu);
     }
 
     /**
@@ -98,21 +101,19 @@ public class OmegaApp extends Application {
         // exit
         Text exit = getMainMenuItem("EXIT");
         exit.setOnMouseClicked(event -> {
-            Node source = (Node) event.getSource();
-            Stage window = (Stage) source.getScene().getWindow();
-            window.close();
+            stage.close();
         });
         // an empty space to push the visible elements up a little
         Region empty = new Region();
         empty.setPrefHeight(100);
 
         VBox root = new VBox();
+        root.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
         root.setAlignment(Pos.CENTER);
         root.setSpacing(10);
         root.getChildren().addAll(newGame, highScore, settings, help, exit, empty);
 
         mainMenu = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
-        mainMenu.setFill(Color.BLACK);
     }
 
     /**
