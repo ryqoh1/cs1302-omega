@@ -38,7 +38,9 @@ import javafx.util.converter.DefaultStringConverter;
 
 public class HighScoreScreen {
 
+    /** File that stores the current records */
     private static Path HIGHSCORES_FILE = Path.of("resources/highscores");
+    /** File that stores the factory default records */
     private static Path DEFAULT_HIGHSCORES_FILE = Path.of("resources/highscores_default");
     private static Background BLACK = new Background(
             new BackgroundFill(Color.BLACK, null, null));
@@ -46,12 +48,11 @@ public class HighScoreScreen {
     private Scene scene;
     private List<Record> highScores;
     private TableView<Record> table;
-    private int editIndex = -1;
-    private TableColumn<Record, String> nameCol;
-    private OmegaApp app;
+    /** The editable(newly added) row's index*/
+    private int editIndex;
 
     public HighScoreScreen(int width, int height, OmegaApp app) {
-        this.app = app;
+        editIndex = -1;
         highScores = new ArrayList<>();
         try {
             loadFromFile(HIGHSCORES_FILE);
@@ -59,89 +60,16 @@ public class HighScoreScreen {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        ObservableList<Record> data = FXCollections.observableList(highScores);
-
-        TableColumn<Record, Integer> scoreCol = new TableColumn<>("Score");
-        nameCol = new TableColumn<>("Name");
-        TableColumn<Record, LocalDate> dateCol = new TableColumn<>("Date");
-
-        scoreCol.setCellValueFactory(new PropertyValueFactory<Record, Integer>("score"));
-        scoreCol.setCellFactory(col -> {
-            TableCell<Record, Integer> cell = new TextFieldTableCell<>();
-            cell.setBackground(BLACK);
-            cell.setTextFill(Color.WHITE);
-            cell.setAlignment(Pos.CENTER);
-            cell.setFont(OmegaApp.F24);
-            return cell;
-        });
-        nameCol.setCellValueFactory(new PropertyValueFactory<Record, String>("name"));
-        nameCol.setCellFactory(col -> {
-            TextFieldTableCell<Record, String> cell = new TextFieldTableCell<>() {
-                @Override
-                public void startEdit() {
-                    if (getIndex() != editIndex) {
-                        return;
-                    }
-                    super.startEdit();
-                }
-            };
-
-            cell.setEditable(true);
-            cell.setConverter(new DefaultStringConverter());
-            cell.setBackground(BLACK);
-            cell.setTextFill(Color.WHITE);
-            cell.setAlignment(Pos.CENTER);
-            cell.setFont(OmegaApp.F24);
-            
-            return cell;
-        });
-        // https://stackoverflow.com/questions/18721394/can-javafx-tableview-be-partly-editable
-        nameCol.setOnEditCommit(event -> {
-            ((Record) event.getTableView().getItems()
-                    .get(event.getTablePosition().getRow())).setName(event.getNewValue());
-        });
-        dateCol.setCellValueFactory(new PropertyValueFactory<Record, LocalDate>("date"));
-        dateCol.setCellFactory(col -> {
-            TableCell<Record, LocalDate> cell = new TextFieldTableCell<>();
-            cell.setBackground(BLACK);
-            cell.setTextFill(Color.WHITE);
-            cell.setAlignment(Pos.CENTER);
-            cell.setFont(OmegaApp.F24);
-            return cell;
-        });
-        table = new TableView<>(data);
-        table.getColumns().add(scoreCol);
-        table.getColumns().add(nameCol);
-        table.getColumns().add(dateCol);
-        VBox.setVgrow(table, Priority.ALWAYS);
-        table.setEditable(true);
-        nameCol.setEditable(true);
-        table.setStyle("-fx-table-cell-border-color: transparent;");
-
-//        https://stackoverflow.com/questions/27118872/how-to-hide-tableview-column-header-in-javafx-8
-        table.skinProperty().addListener((a, b, newSkin) -> {
-            Pane header = (Pane) table.lookup("TableHeaderRow");
-            header.setMinHeight(0);
-            header.setPrefHeight(0);
-            header.setMaxHeight(0);
-            header.setVisible(false);
-        });
-
-        scoreCol.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
-        nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.4));
-        dateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.296));
-
-        scoreCol.setResizable(false);
-        nameCol.setResizable(false);
-        dateCol.setResizable(false);
-
+        
+        initTable();
+        // menu item to reset high score to factory default
         Text reset = new Text("RESET");
         reset.setFill(Color.WHITE);
         reset.setFont(OmegaApp.F40);
         reset.setOnMouseEntered(event -> reset.setFill(Color.RED));
         reset.setOnMouseExited(event -> reset.setFill(Color.WHITE));
         reset.setOnMouseClicked(event -> reset());
-        
+        // menu item to leave this screen to the main menu
         Text done = new Text("DONE");
         done.setFill(Color.WHITE);
         done.setFont(OmegaApp.F40);
@@ -149,21 +77,21 @@ public class HighScoreScreen {
         done.setOnMouseExited(event -> done.setFill(Color.WHITE));
         done.setOnMouseClicked(event -> {
             try {
+                // save before leaving
                 saveToFile(HIGHSCORES_FILE);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             app.displayMainMenu();
         });
-
-        
+        // empty spaces for better alignment
         Region space1 = new Region();
         HBox.setHgrow(space1, Priority.ALWAYS);
         Region space2 = new Region();
         HBox.setHgrow(space2, Priority.ALWAYS);
         Region space3 = new Region();
         HBox.setHgrow(space3, Priority.ALWAYS);
-
+        // menu at the bottom
         HBox menu = new HBox();
         menu.setAlignment(Pos.CENTER);
         menu.setPrefHeight(60);
@@ -173,6 +101,111 @@ public class HighScoreScreen {
         root.setBackground(BLACK);
         scene = new Scene(root, width, height);
         root.getChildren().addAll(table, menu);
+    }
+
+    private void initTable() {
+        // initialize columns
+        TableColumn<Record, Integer> scoreCol = initScoreColumn();
+        TableColumn<Record, String> nameCol = initNameColumn();
+        TableColumn<Record, LocalDate> dateCol = initDateColumn();
+        // set data source for the table
+        ObservableList<Record> data = FXCollections.observableList(highScores);
+        table = new TableView<>(data);
+        table.getColumns().add(scoreCol);
+        table.getColumns().add(nameCol);
+        table.getColumns().add(dateCol);
+        // make the table stretch vertically
+        VBox.setVgrow(table, Priority.ALWAYS);
+        // a cell is only editable if the column and table it elongs to are also editable
+        table.setEditable(true);
+        nameCol.setEditable(true);
+        // hide column headers
+        // https://stackoverflow.com/questions/27118872/how-to-hide-tableview-column-header-in-javafx-8
+        table.skinProperty().addListener((a, b, newSkin) -> {
+            Pane header = (Pane) table.lookup("TableHeaderRow");
+            header.setMinHeight(0);
+            header.setPrefHeight(0);
+            header.setMaxHeight(0);
+            header.setVisible(false);
+        });
+        // give columns a fixed width based on the table's width
+        scoreCol.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
+        nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.4));
+        dateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.296));
+        scoreCol.setResizable(false);
+        nameCol.setResizable(false);
+        dateCol.setResizable(false);
+    }
+
+    private TableColumn<Record, Integer> initScoreColumn() {
+        TableColumn<Record, Integer> scoreCol = new TableColumn<>();
+        // set the "score" field of the Record class as source
+        scoreCol.setCellValueFactory(new PropertyValueFactory<Record, Integer>("score"));
+        // set custom cells for this column
+        scoreCol.setCellFactory(col -> {
+            TableCell<Record, Integer> cell = new TextFieldTableCell<>();
+            // set cell style
+            cell.setBackground(BLACK);
+            cell.setTextFill(Color.WHITE);
+            cell.setAlignment(Pos.CENTER);
+            cell.setFont(OmegaApp.F24);
+            return cell;
+        });
+
+        return scoreCol;
+    }
+
+    private TableColumn<Record, String> initNameColumn() {
+        TableColumn<Record, String> nameCol = new TableColumn<>();
+        // set the "name" field of the Record class as source
+        nameCol.setCellValueFactory(new PropertyValueFactory<Record, String>("name"));
+        // set custom editable cells for this column
+        nameCol.setCellFactory(col -> {
+            // cell has a text field for editing
+            TextFieldTableCell<Record, String> cell = new TextFieldTableCell<>() {
+                @Override
+                public void startEdit() {
+                    // only one row(the newly added one) may be editable
+                    if (getIndex() != editIndex) {
+                        return;
+                    }
+                    super.startEdit();
+                }
+            };
+            // set the cells editable
+            cell.setEditable(true);
+            cell.setConverter(new DefaultStringConverter());
+            // set style
+            cell.setBackground(BLACK);
+            cell.setTextFill(Color.WHITE);
+            cell.setAlignment(Pos.CENTER);
+            cell.setFont(OmegaApp.F24);
+
+            return cell;
+        });
+        // update record after editing
+        nameCol.setOnEditCommit(event -> {
+            ((Record) event.getTableView().getItems()
+                    .get(event.getTablePosition().getRow())).setName(event.getNewValue());
+        });
+
+        return nameCol;
+    }
+
+    private TableColumn<Record, LocalDate> initDateColumn() {
+        TableColumn<Record, LocalDate> dateCol = new TableColumn<>();
+        // set the "date" field of the Record class as source
+        dateCol.setCellValueFactory(new PropertyValueFactory<Record, LocalDate>("date"));
+        // set custom cells for this column
+        dateCol.setCellFactory(col -> {
+            TableCell<Record, LocalDate> cell = new TextFieldTableCell<>();
+            cell.setBackground(BLACK);
+            cell.setTextFill(Color.WHITE);
+            cell.setAlignment(Pos.CENTER);
+            cell.setFont(OmegaApp.F24);
+            return cell;
+        });
+        return dateCol;
     }
 
     public boolean canAddRecord(int score) {
