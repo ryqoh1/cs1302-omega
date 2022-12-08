@@ -13,13 +13,10 @@ import java.util.List;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -32,10 +29,12 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
-import javafx.util.StringConverter;
 import javafx.util.converter.DefaultStringConverter;
 
+/**
+ * Class representing the High Scores screen.
+ * 
+ */
 public class HighScoreScreen {
 
     /** File that stores the current records */
@@ -45,22 +44,33 @@ public class HighScoreScreen {
     private static Background BLACK = new Background(
             new BackgroundFill(Color.BLACK, null, null));
 
+    /** The main scene of this screen */
     private Scene scene;
+    /** The high scores data */
     private List<Record> highScores;
+    /** The high scores table */
     private TableView<Record> table;
-    /** The editable(newly added) row's index*/
+    /** The editable(newly added) row's index */
     private int editIndex;
 
+    /**
+     * 
+     * Creates a new HighScoreScreen with the specified {@code width} and
+     * {@code height}.
+     * 
+     * @param width  the width of this screen
+     * @param height the height of this screen
+     * @param app    the app containing this screen
+     */
     public HighScoreScreen(int width, int height, OmegaApp app) {
         editIndex = -1;
         highScores = new ArrayList<>();
         try {
             loadFromFile(HIGHSCORES_FILE);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
+        // initialize table
         initTable();
         // menu item to reset high score to factory default
         Text reset = new Text("RESET");
@@ -103,6 +113,10 @@ public class HighScoreScreen {
         root.getChildren().addAll(table, menu);
     }
 
+    /**
+     * Creates and initializes the high scores table.
+     * 
+     */
     private void initTable() {
         // initialize columns
         TableColumn<Record, Integer> scoreCol = initScoreColumn();
@@ -116,7 +130,8 @@ public class HighScoreScreen {
         table.getColumns().add(dateCol);
         // make the table stretch vertically
         VBox.setVgrow(table, Priority.ALWAYS);
-        // a cell is only editable if the column and table it elongs to are also editable
+        // a cell is only editable if the column and table it elongs to are also
+        // editable
         table.setEditable(true);
         nameCol.setEditable(true);
         // hide column headers
@@ -137,6 +152,11 @@ public class HighScoreScreen {
         dateCol.setResizable(false);
     }
 
+    /**
+     * Creates and initializes the score column.
+     * 
+     * @return the initialized column
+     */
     private TableColumn<Record, Integer> initScoreColumn() {
         TableColumn<Record, Integer> scoreCol = new TableColumn<>();
         // set the "score" field of the Record class as source
@@ -155,6 +175,11 @@ public class HighScoreScreen {
         return scoreCol;
     }
 
+    /**
+     * Creates and initializes the name column.
+     * 
+     * @return the initialized column
+     */
     private TableColumn<Record, String> initNameColumn() {
         TableColumn<Record, String> nameCol = new TableColumn<>();
         // set the "name" field of the Record class as source
@@ -192,6 +217,11 @@ public class HighScoreScreen {
         return nameCol;
     }
 
+    /**
+     * Creates and initializes the date column.
+     * 
+     * @return the initialized column
+     */
     private TableColumn<Record, LocalDate> initDateColumn() {
         TableColumn<Record, LocalDate> dateCol = new TableColumn<>();
         // set the "date" field of the Record class as source
@@ -208,6 +238,14 @@ public class HighScoreScreen {
         return dateCol;
     }
 
+    /**
+     * Returns whether there is a record in the table with less than or equal score
+     * as the specified score.
+     * 
+     * @param score the score
+     * @return {@code true} if a record with this score can be inserted to the
+     *         table, {@code false} otherwise
+     */
     public boolean canAddRecord(int score) {
         for (Record record : highScores) {
             if (score >= record.getScore()) {
@@ -217,6 +255,14 @@ public class HighScoreScreen {
         return false;
     }
 
+    /**
+     * Adds a new row to the table with the specified score, the current date and a
+     * default name. The new row is inserted at a place that keeps the rows in
+     * descending order by score. The name column of the new row will be editable
+     * after this method executes.
+     * 
+     * @param score the score
+     */
     public void addRecord(int score) {
         for (int i = 0; i < highScores.size(); i++) {
             if (score >= highScores.get(i).getScore()) {
@@ -226,17 +272,21 @@ public class HighScoreScreen {
                 break;
             }
         }
+        // remove the extra row
         highScores.remove(10);
+        // reload table data
         table.setItems(FXCollections.observableList(highScores));
     }
 
     /**
+     * Loads records from the file at the specified path.
      * 
-     * @param filePath
-     * @throws IOException
+     * @param filePath path to the file
+     * @throws IOException if I/O error happens during execution
      */
     private void loadFromFile(Path filePath) throws IOException {
         highScores.clear();
+        // try with resources
         try (BufferedReader r = Files.newBufferedReader(filePath)) {
             while (r.ready()) {
                 String line = r.readLine();
@@ -249,9 +299,17 @@ public class HighScoreScreen {
         }
     }
 
+    /**
+     * Saves records to the file at the specified path.
+     * 
+     * @param filePath path to the file
+     * @throws IOException if I/O error happens during execution
+     */
     private void saveToFile(Path filePath) throws IOException {
-        OpenOption createNew = StandardOpenOption.TRUNCATE_EXISTING;
-        try (BufferedWriter w = Files.newBufferedWriter(filePath, createNew)) {
+        // old content of the file should be deleted
+        OpenOption truncate = StandardOpenOption.TRUNCATE_EXISTING;
+        // try with resources
+        try (BufferedWriter w = Files.newBufferedWriter(filePath, truncate)) {
             for (int i = 0; i < highScores.size(); i++) {
                 StringBuilder entry = new StringBuilder();
                 entry.append(highScores.get(i).getScore());
@@ -265,6 +323,9 @@ public class HighScoreScreen {
         }
     }
 
+    /**
+     * Resets records to factory defaults.
+     */
     private void reset() {
         try {
             loadFromFile(DEFAULT_HIGHSCORES_FILE);
@@ -274,6 +335,11 @@ public class HighScoreScreen {
         table.setItems(FXCollections.observableList(highScores));
     }
 
+    /**
+     * Returns the main scene of this screen.
+     * 
+     * @return the scene
+     */
     public Scene getScene() {
         return scene;
     }
