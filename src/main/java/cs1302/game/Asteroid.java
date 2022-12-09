@@ -63,7 +63,7 @@ public class Asteroid extends AnimatedObject {
         case LARGE:
             size = 50;
         }
-
+        // generate random shape
         shape = getRandomPolygon(size, 15);
 
         // asteroid objects are using a randomly generated subimage of same image as the
@@ -90,8 +90,10 @@ public class Asteroid extends AnimatedObject {
      */
     public void randomizeMovement() {
         Random rnd = new Random();
+        // base values
         Point2D baseVelocity = new Point2D(rnd.nextDouble(2) - 1, rnd.nextDouble(2) - 1);
         double baseSpin = rnd.nextDouble(2.0) - 1.0;
+        // modify base values
         switch (type) {
         case SMALL:
             spin = baseSpin * 3;
@@ -139,7 +141,6 @@ public class Asteroid extends AnimatedObject {
         }
 
         return result;
-
     }
 
     @Override
@@ -182,7 +183,6 @@ public class Asteroid extends AnimatedObject {
             angle += angleDelta;
             verticles[index * 2] = length * Math.cos(Math.toRadians(angle));
             verticles[index * 2 + 1] = length * Math.sin(Math.toRadians(angle));
-            ;
 
             prevLength = length;
         }
