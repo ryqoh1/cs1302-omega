@@ -286,7 +286,12 @@ public class HighScoreScreen {
      */
     private void loadFromFile(Path filePath) throws IOException {
         highScores.clear();
-        // try with resources
+        // fall back to default if the file does not exist
+        if (!Files.exists(filePath) && Files.exists(DEFAULT_HIGHSCORES_FILE)) {
+            loadFromFile(DEFAULT_HIGHSCORES_FILE);
+            return;
+        }
+        // read from file with try with resources
         try (BufferedReader r = Files.newBufferedReader(filePath)) {
             while (r.ready()) {
                 String line = r.readLine();
@@ -298,8 +303,6 @@ public class HighScoreScreen {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            // fall back to default
-            loadFromFile(DEFAULT_HIGHSCORES_FILE);
         }
     }
 
@@ -312,9 +315,9 @@ public class HighScoreScreen {
     private void saveToFile(Path filePath) throws IOException {
         // old content of the file should be deleted
         OpenOption truncate = StandardOpenOption.TRUNCATE_EXISTING;
-        // create file if it doesn not exist
+        // create file if it does not exist
         OpenOption create = StandardOpenOption.CREATE;
-        // try with resources
+        // save to file with try with resources
         try (BufferedWriter w = Files.newBufferedWriter(filePath, create, truncate)) {
             for (int i = 0; i < highScores.size(); i++) {
                 StringBuilder entry = new StringBuilder();
