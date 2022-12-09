@@ -13,49 +13,63 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 
 /**
- * An example of a simple game in JavaFX. The play can move the rectangle
- * left/right with the arrow keys or teleport the rectangle by clicking it!
+ * Implementation of the Asteroids game.
+ * @see The Help menu for more information on gameplay
  */
 public class AsteroidsGame extends Game {
 
+    /** Player's ship */
     private Ship player;
+    /** Asteroids */
     private List<Asteroid> asteroids = new ArrayList<>();
+    /** Projectiles */
     private List<Projectile> projectiles = new ArrayList<>();
+    /** Random number generator */
     private Random rnd = new Random();
+    /** Game score */
     private int score = 0;
+    /** Lives */
     private int lives = 3;
+    /** Whether the game is paused, waiting for user interaction */
     private boolean waitingForInteraction;
+    /** Time left from invulnerability */
     private int shipInvulnerable;
-
+    /** GameScreen containing this game */
     private GameScreen gameScreen;
 
     /**
-     * Construct a {@code DemoGame} object.
+     * Constructs a {@code AsteroidsGame} object with the specified {@code width},
+     * {@code height} and {@code GameScreen}.
      * 
-     * @param width  scene width
-     * @param height scene height
+     * @param width width of the game area
+     * @param height height of the game area
+     * @param gameScreen the GameScreen containing this game
      */
     public AsteroidsGame(int width, int height, GameScreen gameScreen) {
         super(width, height, 60); // call parent constructor
         this.gameScreen = gameScreen;
         setLogLevel(Level.INFO); // enable logging
+    } 
+
+    /** {@inheritDoc} */
+    @Override
+    protected void init() {
         this.player = new Ship(this);
         // ship should be rendered last
         this.player.getShape().setViewOrder(-1);
         player.setMaxSpeed(5);
         player.setWeaponCooldown(30);
-    } // DemoGame
-
-    /** {@inheritDoc} */
-    @Override
-    protected void init() {
-        // setup subgraph for this component
         getChildren().addAll(player.getShape());
+        // move to the center, facing up
         player.move(new Point2D(getWidth() / 2 - 15, getHeight() / 2 - 15));
         player.rotate(-90.0);
-        gameScreen.displayLives(lives);
+        // spawn asteroids
         spawnInitialAsteroids();
-        update();
+        // call updates to put everything in place
+        player.update();
+        updateAsteroids();
+        gameScreen.displayLives(lives);
+        // pause the game
         waitingForInteraction = true;
     } // init
 
@@ -71,7 +85,7 @@ public class AsteroidsGame extends Game {
                     gameScreen.afterGame(score);
                 }
             } else {
-                // continue 
+                // continue
                 if (isKeyPressed(KeyCode.ENTER)) {
                     waitingForInteraction = false;
                     gameScreen.displayInfo("");
@@ -127,11 +141,13 @@ public class AsteroidsGame extends Game {
                     Bounds objectBounds = asteroid.getShape().getBoundsInParent();
                     double cx = objectBounds.getCenterX();
                     double cy = objectBounds.getCenterY();
-                    for (Asteroid aa : newAsteroids) {
-                        aa.move(new Point2D(cx, cy));
-                        aa.move(new Point2D(rnd.nextDouble(10) - 5,
+                    for (Asteroid newAsteroid : newAsteroids) {
+                        // move it to the position of the destroyed asteroid
+                        newAsteroid.move(new Point2D(cx, cy));
+                        // move it a bit to a random direction
+                        newAsteroid.move(new Point2D(rnd.nextDouble(10) - 5,
                                 rnd.nextDouble(10) - 5));
-                        aa.randomizeMovement();
+                        newAsteroid.randomizeMovement();
                     }
                     // projectile will disappear in the next update
                     p.setTimeLeft(0);
