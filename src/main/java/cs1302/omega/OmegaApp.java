@@ -34,6 +34,7 @@ public class OmegaApp extends Application {
     Scene mainMenu;
     Stage stage;
     HighScoreScreen highScoreScreen;
+    HelpScreen helpScreen;
 
     /**
      * Constructs an {@code OmegaApp} object. This default (i.e., no argument)
@@ -55,7 +56,8 @@ public class OmegaApp extends Application {
 
         initMainMenu();
         highScoreScreen = new HighScoreScreen(SCENE_WIDTH, SCENE_HEIGHT, this);
-
+        helpScreen = new HelpScreen(SCENE_WIDTH, SCENE_HEIGHT, this);
+        
         // setup stage
         stage.setTitle("Asteroids!");
         stage.setScene(mainMenu);
@@ -97,7 +99,7 @@ public class OmegaApp extends Application {
         settings.setOnMouseClicked(event -> System.out.println("unimplemented"));
         // help
         Text help = getMainMenuItem("HELP");
-        help.setOnMouseClicked(event -> System.out.println("unimplemented"));
+        help.setOnMouseClicked(event -> stage.setScene(helpScreen.getScene()));
         // exit
         Text exit = getMainMenuItem("EXIT");
         exit.setOnMouseClicked(event -> {
