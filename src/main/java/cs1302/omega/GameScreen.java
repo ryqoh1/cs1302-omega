@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import cs1302.game.DemoGame;
+import cs1302.game.AsteroidsGame;
 import cs1302.game.Game;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -94,7 +94,7 @@ public class GameScreen {
         infoArea.getChildren().add(space2);
         infoArea.getChildren().add(scoreArea);
 
-        game = new DemoGame(width, height - INFO_HEIGHT, this);
+        game = new AsteroidsGame(width, height - INFO_HEIGHT, this);
         game.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
         // this makes the game area render after the info area without affecting the
         // layout

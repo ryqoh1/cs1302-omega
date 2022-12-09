@@ -16,7 +16,7 @@ import javafx.scene.input.MouseEvent;
  * An example of a simple game in JavaFX. The play can move the rectangle
  * left/right with the arrow keys or teleport the rectangle by clicking it!
  */
-public class DemoGame extends Game {
+public class AsteroidsGame extends Game {
 
     private Ship player;
     private List<Asteroid> asteroids = new ArrayList<>();
@@ -35,7 +35,7 @@ public class DemoGame extends Game {
      * @param width  scene width
      * @param height scene height
      */
-    public DemoGame(int width, int height, GameScreen gameScreen) {
+    public AsteroidsGame(int width, int height, GameScreen gameScreen) {
         super(width, height, 60); // call parent constructor
         this.gameScreen = gameScreen;
         setLogLevel(Level.INFO); // enable logging
@@ -289,7 +289,7 @@ public class DemoGame extends Game {
         double scx = shipBounds.getCenterX();
         double scy = shipBounds.getCenterY();
         // create a projectile with ~2s display time
-        Projectile p = new Projectile(DemoGame.this, 120);
+        Projectile p = new Projectile(AsteroidsGame.this, 120);
         // get the central coordinates of the projectile
         Bounds pBounds = p.getShape().getBoundsInParent();
         double pcx = pBounds.getCenterX();
