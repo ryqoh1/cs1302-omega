@@ -23,17 +23,24 @@ import javafx.stage.Stage;
  */
 public class OmegaApp extends Application {
 
+    /** The default scene width of the app */
     public static final int SCENE_WIDTH = 620;
+    /** The default scene height of the app */
     public static final int SCENE_HEIGHT = 680;
 
+    // fonts to be used in the app
     public static final Font F40 = Font.font("C059", FontWeight.MEDIUM, 40);
     public static final Font F24 = Font.font("C059", FontWeight.MEDIUM, 24);
     public static final Font F18 = Font.font("C059", FontWeight.NORMAL, 18);
     public static final Font F14 = Font.font("C059", FontWeight.NORMAL, 14);
 
+    /** The main scene of the main menu screen */
     Scene mainMenu;
+    /** The main window of the app */
     Stage stage;
+    /** Highscore screen */
     HighScoreScreen highScoreScreen;
+    /** Help screen */
     HelpScreen helpScreen;
 
     /**
@@ -57,7 +64,7 @@ public class OmegaApp extends Application {
         initMainMenu();
         highScoreScreen = new HighScoreScreen(SCENE_WIDTH, SCENE_HEIGHT, this);
         helpScreen = new HelpScreen(SCENE_WIDTH, SCENE_HEIGHT, this);
-        
+
         // setup stage
         stage.setTitle("Asteroids!");
         stage.setScene(mainMenu);
@@ -67,7 +74,14 @@ public class OmegaApp extends Application {
         Platform.runLater(() -> stage.setResizable(false));
     } // start
 
+    /**
+     * This method is called after the game ends with the specified score.
+     * 
+     * @param score the score
+     */
     public void afterGame(int score) {
+        // display the highscore screen if the score high enough, otherwise display
+        // the main menu
         if (highScoreScreen.canAddRecord(score)) {
             highScoreScreen.addRecord(score);
             stage.setScene(highScoreScreen.getScene());
@@ -75,7 +89,10 @@ public class OmegaApp extends Application {
             stage.setScene(mainMenu);
         }
     }
-    
+
+    /**
+     * Displays the main menu screen.
+     */
     public void displayMainMenu() {
         stage.setScene(mainMenu);
     }
@@ -95,7 +112,9 @@ public class OmegaApp extends Application {
         Text highScore = getMainMenuItem("HIGH SCORES");
         highScore.setOnMouseClicked(event -> stage.setScene(highScoreScreen.getScene()));
         // settings
-        Text settings = getMainMenuItem("SETTINGS");
+        Text settings = new Text("SETTINGS");
+        settings.setFill(Color.GREY);
+        settings.setFont(F40);
         settings.setOnMouseClicked(event -> System.out.println("unimplemented"));
         // help
         Text help = getMainMenuItem("HELP");
