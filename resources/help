@@ -18,3 +18,4 @@ _A_ : Turn left
 _D_ : Turn right
 _W_ : Apply thrust
 _SPACE_ : Fire weapon
+_LEFT_MOUSE_BUTTON_ : Turn towards mouse cursor
