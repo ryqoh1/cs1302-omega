@@ -39,32 +39,46 @@ public class GameScreen {
     /** The height of the info area in pixels */
     public static final int INFO_HEIGHT = 60;
 
+    /** The main scene of this screen*/
     private Scene scene;
+    /** The game area*/
     private Game game;
+    /** The score*/
     private Text score;
+    /** The info text*/
     private Text info;
+    /** Images representing the remaining lives*/
     private List<ImageView> lives;
+    /** The app containing this screen*/
     private OmegaApp app;
 
     /**
-     * Creates a new GameScreen with the specified {@code width} and {@code height}.
+     * Creates a new GameScreen with the specified {@code width}, {@code height} and {@code App}
      * The height of the actual game area will be {@code height} -
      * {@link #INFO_HEIGHT}.
      * 
-     * @param width
-     * @param height
+     * @param width the width
+     * @param height the height
+     * @param app the app containing this screen
      */
     public GameScreen(int width, int height, OmegaApp app) {
         this.app = app;
         initGameScreen(width, height);
     }
 
+    /**
+     * Initializes this GameScreen with the specified {@code width} and {@code height}.
+     * 
+     * @param width the width
+     * @param height the height
+     */
     private void initGameScreen(int width, int height) {
 
         Pane scoreArea = initScoreArea();
+        // initial score
         displayScore(0);
         Pane livesArea = initLivesArea();
-
+        // initial info text
         info = new Text("PRESS ENTER\nTO START");
         info.setFill(Color.WHITE);
         info.setFont(OmegaApp.F18);
@@ -166,6 +180,11 @@ public class GameScreen {
         game.play();
     }
     
+    /**
+     * Ends the game with the specified score.
+     * 
+     * @param score the score
+     */
     public void afterGame(int score) {
         app.afterGame(score);
     }
