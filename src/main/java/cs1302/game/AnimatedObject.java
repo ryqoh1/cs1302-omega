@@ -188,8 +188,8 @@ public abstract class AnimatedObject {
     }
 
     /**
-     * Returns a vector with the length of 1.0 and direction the same as this object's
-     * direction.
+     * Returns a vector with the length of 1.0 and direction the same as this
+     * object's direction.
      * 
      * @return the direction
      */
@@ -208,6 +208,49 @@ public abstract class AnimatedObject {
      */
     public void rotate(double angleInDegrees) {
         rotate += angleInDegrees;
+    }
+
+    /**
+     * Rotates this object towards the specified point, by a degree no greater in
+     * absolute value than the specified maximmum change in degrees.
+     * 
+     * @param point    the point
+     * @param maxDelta the maximum absolute value of change
+     */
+    public void rotateToPoint(Point2D point, double maxDelta) {
+        // get the central coordinates
+        Bounds objectBounds = shape.getBoundsInParent();
+        double cx = objectBounds.getCenterX();
+        double cy = objectBounds.getCenterY();
+        // direction of the point in degrees
+        double targetDir = getAngle(new Point2D(cx, cy), point);
+        double oldDir = getDirectionInDegrees();
+        // the signed angle needed to reach the target direction
+        double angle = targetDir - oldDir;
+        if (angle > 180) {
+            angle += -360;
+        } else if (angle < -180) {
+            angle += 360;
+        }
+        // set rotation 
+        if (angle >= 0) {
+            rotate += Math.min(angle, maxDelta);
+        } else {
+            rotate -= Math.min(-angle, maxDelta);
+        }
+    }
+
+    /**
+     * Get the angle between two points in degrees.
+     * 
+     * @param p1 the first point
+     * @param p2 the second point
+     * @return the angle
+     */
+    private static double getAngle(Point2D p1, Point2D p2) {
+        double theta = Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());
+        double angle = Math.toDegrees(theta);
+        return angle;
     }
 
     /**

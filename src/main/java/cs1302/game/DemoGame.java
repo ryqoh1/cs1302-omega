@@ -10,6 +10,7 @@ import cs1302.omega.GameScreen;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
 
 /**
  * An example of a simple game in JavaFX. The play can move the rectangle
@@ -105,9 +106,9 @@ public class DemoGame extends Game {
             rotationHandled = true;
         }
 
-//        if (!rotationHandled && isMouseButtonPressed()) {
-//            rotateShipToCursor(getLastMousePressedEvent());
-//        }
+        if (!rotationHandled && isMouseButtonPressed()) {
+            rotateShipToCursor(getLastMousePressedEvent());
+        }
 
         if (!isKeyPressed(KeyCode.W)) {
             player.setEnginesOn(false);
@@ -332,71 +333,13 @@ public class DemoGame extends Game {
         }
     }
 
-//    /**
-//     * Rotates the ship towards the mouse cursor.
-//     * 
-//     * @param event associated mouse event
-//     */
-//    private void rotateShipToCursor(MouseEvent event) {
-//
-//        // logger.info(event.toString());
-//        Bounds playerBounds = player.getShape().getBoundsInParent();
-//        Point2D click = new Point2D(event.getX(), event.getY());
-//
-//        double angle = getAngle(
-//                new Point2D(playerBounds.getCenterX(), playerBounds.getCenterY()), click);
-//        double oldDir = player.getDirectionInDegrees();
-//
-//        if (angle < 0 && oldDir < 0) {
-//            if (angle < oldDir) { // left
-//                player.rotate(Math.max(angle, oldDir - 5));
-//            } else { // right
-//                player.rotate(Math.min(angle, oldDir + 5));
-//            }
-//        } else if (angle < 0 && oldDir >= 0) {
-//            if (angle + 180 > oldDir) { // left
-//                double tmpDir = oldDir - 5;
-//                if (tmpDir < angle) {
-//                    player.rotate(angle);
-//                }
-//            } else { // right
-//                double tmpDir = oldDir + 5;
-//                if (tmpDir > 180) {
-//                    player.rotate(tmpDir - 360);
-//                }
-//            }
-//        } else if (angle >= 0 && oldDir >= 0) {
-//            if (angle < oldDir) { // left
-//                player.rotate(Math.max(angle, oldDir - 5));
-//            } else { // right
-//                player.rotate(Math.min(angle, oldDir + 5));
-//            }
-//        } else if (angle >= 0 && oldDir < 0) {
-//            if (angle - 180 > oldDir) { // left
-//                double tmpDir = oldDir - 5;
-//                if (tmpDir < -180) {
-//                    player.rotate(tmpDir + 360);
-//                }
-//            } else { // right
-//                double tmpDir = oldDir - 5;
-//                if (tmpDir > angle) {
-//                    player.rotate(angle);
-//                }
-//            }
-//        }
-//
-//        double newDir = player.getDirectionInDegrees();
-//        if (Math.abs(oldDir - newDir) > 5) {
-//            System.out.println(angle + " " + oldDir + " " + newDir);
-//        }
-//        System.out.println(angle + " " + oldDir + " " + newDir);
-//
-//    }
-
-    private double getAngle(Point2D p1, Point2D p2) {
-        double theta = Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());
-        double angle = Math.toDegrees(theta);
-        return angle;
+    /**
+     * Rotates the ship towards the mouse cursor.
+     * 
+     * @param event associated mouse event
+     */
+    private void rotateShipToCursor(MouseEvent event) {
+        Point2D click = new Point2D(event.getX(), event.getY());
+        player.rotateToPoint(click, 4.0);
     }
-
-} // DemoGame
+} 
