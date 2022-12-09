@@ -62,63 +62,36 @@ public class AsteroidsGame extends Game {
     /** {@inheritDoc} */
     @Override
     protected void update() {
-
+        // handle unpause after the player died
         if (waitingForInteraction) {
             if (lives == 0) {
+                // no more lives left, end the game
                 if (isKeyPressed(KeyCode.ENTER)) {
-                    // end the game 
-                    handleGameEnd();
+                    stop();
+                    gameScreen.afterGame(score);
                 }
             } else {
+                // continue 
                 if (isKeyPressed(KeyCode.ENTER)) {
                     waitingForInteraction = false;
                     gameScreen.displayInfo("");
                 }
             }
-            
             return;
         }
-        
+        // end round if there are no asteroids left
         if (asteroids.isEmpty()) {
             handleRoundEnd();
             return;
         }
-
-        if (shipInvulnerable == 0 && isKeyPressed(KeyCode.SPACE)) {
-            if (player.fire()) {
-                // spawn projectile
-                spawnProjectile();
-            }
-        }
-
-        // update player position
-        isKeyPressed(KeyCode.LEFT, () -> player.move(new Point2D(-10, 0)));
-        isKeyPressed(KeyCode.RIGHT, () -> player.move(new Point2D(10, 0)));
-        // update player position
-        isKeyPressed(KeyCode.UP, () -> player.move(new Point2D(0, -10)));
-        isKeyPressed(KeyCode.DOWN, () -> player.move(new Point2D(0, 10)));
-
-        // don't rotate twice from keyboard and mouse
-        boolean rotationHandled = false;
-        if (isKeyPressed(KeyCode.D, () -> player.rotate(4))) {
-            rotationHandled = true;
-        } else if (isKeyPressed(KeyCode.A, () -> player.rotate(-4))) {
-            rotationHandled = true;
-        }
-
-        if (!rotationHandled && isMouseButtonPressed()) {
-            rotateShipToCursor(getLastMousePressedEvent());
-        }
-
-        if (!isKeyPressed(KeyCode.W)) {
-            player.setEnginesOn(false);
-        } else {
-            player.setEnginesOn(true);
-        }
-
+        // handle controls
+        handleShipControls();
+        // update objects
         player.update();
+        updateAsteroids();
+        updateProjectiles();
         shipInvulnerable = Math.max(0, shipInvulnerable - 1);
-
+        // flash the ship and the lives during invulnerability
         if (shipInvulnerable > 0) {
             if ((shipInvulnerable / 20) % 2 == 0) {
                 player.getShape().setVisible(true);
@@ -128,9 +101,6 @@ public class AsteroidsGame extends Game {
                 gameScreen.displayLives(0);
             }
         }
-        
-        updateAsteroids();
-        updateProjectiles();
         // update game screen
         gameScreen.displayScore(score);
     } // update
@@ -205,6 +175,36 @@ public class AsteroidsGame extends Game {
     }
 
     /**
+     * Handles ship control events.
+     */
+    private void handleShipControls() {
+        // fire weapon if the ship is not invulnerable
+        if (shipInvulnerable == 0 && isKeyPressed(KeyCode.SPACE)) {
+            if (player.fire()) {
+                spawnProjectile();
+            }
+        }
+        // don't rotate twice from keyboard and mouse
+        boolean rotationHandled = false;
+        // rotate from keys
+        if (isKeyPressed(KeyCode.D, () -> player.rotate(4.0))) {
+            rotationHandled = true;
+        } else if (isKeyPressed(KeyCode.A, () -> player.rotate(-4.0))) {
+            rotationHandled = true;
+        }
+        // rotate from moouse event
+        if (!rotationHandled && isMouseButtonPressed()) {
+            rotateShipToCursor(getLastMousePressedEvent());
+        }
+        // apply thrust
+        if (!isKeyPressed(KeyCode.W)) {
+            player.setEnginesOn(false);
+        } else {
+            player.setEnginesOn(true);
+        }
+    }
+
+    /**
      * Handles player collision.
      */
     private void handlePlayerCollision() {
@@ -222,12 +222,6 @@ public class AsteroidsGame extends Game {
                 gameScreen.displayInfo("PRESS ENTER\nTO EXIT GAME");
             }
         }
-    }
-    
-    private void handleGameEnd() {
-        stop();
-        gameScreen.afterGame(score);
-        // TODO
     }
 
     /**
@@ -251,7 +245,7 @@ public class AsteroidsGame extends Game {
             throw new IllegalStateException("unhandled enum type");
         }
     }
-    
+
     /**
      * Handle the end of a round.
      */
@@ -342,4 +336,4 @@ public class AsteroidsGame extends Game {
         Point2D click = new Point2D(event.getX(), event.getY());
         player.rotateToPoint(click, 4.0);
     }
-} 
+}
