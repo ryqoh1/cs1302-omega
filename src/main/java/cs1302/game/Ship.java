@@ -46,8 +46,8 @@ public class Ship extends AnimatedObject {
                 0.0, 0.0);
         shape = shipShape;
         shape.setFill(SHIP_OFF);
-        // defaults
-        setMaxSpeed(10);
+        // defaults 
+        setMaxSpeed(5);
         enginesOn = false;
         weaponCooldown = DEFAULT_WEAPON_COOLDOWN;
         cooldownRemaining = DEFAULT_WEAPON_COOLDOWN;
@@ -98,9 +98,9 @@ public class Ship extends AnimatedObject {
 
     @Override
     public void update() {
-        // accelerate if the engines are on
+        // apply thrust if the engines are on
         if (enginesOn) {
-            changeVelocity(getDirection().multiply(0.1));
+            changeVelocity(getDirection().multiply(0.05));
             shape.setFill(SHIP_ON);
         } else {
             shape.setFill(SHIP_OFF);
