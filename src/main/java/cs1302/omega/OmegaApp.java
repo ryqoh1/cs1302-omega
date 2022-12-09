@@ -95,7 +95,9 @@ public class OmegaApp extends Application {
         Text highScore = getMainMenuItem("HIGH SCORES");
         highScore.setOnMouseClicked(event -> stage.setScene(highScoreScreen.getScene()));
         // settings
-        Text settings = getMainMenuItem("SETTINGS");
+        Text settings = new Text("SETTINGS");
+        settings.setFill(Color.GREY);
+        settings.setFont(F40);
         settings.setOnMouseClicked(event -> System.out.println("unimplemented"));
         // help
         Text help = getMainMenuItem("HELP");
