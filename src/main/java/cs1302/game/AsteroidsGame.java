@@ -10,114 +10,102 @@ import cs1302.omega.GameScreen;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
 
 /**
- * An example of a simple game in JavaFX. The play can move the rectangle
- * left/right with the arrow keys or teleport the rectangle by clicking it!
+ * Implementation of the Asteroids game.
+ * @see The Help menu for more information on gameplay
  */
-public class DemoGame extends Game {
+public class AsteroidsGame extends Game {
 
+    /** Player's ship */
     private Ship player;
+    /** Asteroids */
     private List<Asteroid> asteroids = new ArrayList<>();
+    /** Projectiles */
     private List<Projectile> projectiles = new ArrayList<>();
+    /** Random number generator */
     private Random rnd = new Random();
+    /** Game score */
     private int score = 0;
+    /** Lives */
     private int lives = 3;
+    /** Whether the game is paused, waiting for user interaction */
     private boolean waitingForInteraction;
+    /** Time left from invulnerability */
     private int shipInvulnerable;
-
+    /** GameScreen containing this game */
     private GameScreen gameScreen;
 
     /**
-     * Construct a {@code DemoGame} object.
+     * Constructs a {@code AsteroidsGame} object with the specified {@code width},
+     * {@code height} and {@code GameScreen}.
      * 
-     * @param width  scene width
-     * @param height scene height
+     * @param width width of the game area
+     * @param height height of the game area
+     * @param gameScreen the GameScreen containing this game
      */
-    public DemoGame(int width, int height, GameScreen gameScreen) {
+    public AsteroidsGame(int width, int height, GameScreen gameScreen) {
         super(width, height, 60); // call parent constructor
         this.gameScreen = gameScreen;
         setLogLevel(Level.INFO); // enable logging
+    } 
+
+    /** {@inheritDoc} */
+    @Override
+    protected void init() {
         this.player = new Ship(this);
         // ship should be rendered last
         this.player.getShape().setViewOrder(-1);
         player.setMaxSpeed(5);
         player.setWeaponCooldown(30);
-    } // DemoGame
-
-    /** {@inheritDoc} */
-    @Override
-    protected void init() {
-        // setup subgraph for this component
         getChildren().addAll(player.getShape());
+        // move to the center, facing up
         player.move(new Point2D(getWidth() / 2 - 15, getHeight() / 2 - 15));
         player.rotate(-90.0);
-        gameScreen.displayLives(lives);
+        // spawn asteroids
         spawnInitialAsteroids();
-        update();
+        // call updates to put everything in place
+        player.update();
+        updateAsteroids();
+        gameScreen.displayLives(lives);
+        // pause the game
         waitingForInteraction = true;
     } // init
 
     /** {@inheritDoc} */
     @Override
     protected void update() {
-
+        // handle unpause after the player died
         if (waitingForInteraction) {
             if (lives == 0) {
+                // no more lives left, end the game
                 if (isKeyPressed(KeyCode.ENTER)) {
-                    // end the game 
-                    handleGameEnd();
+                    stop();
+                    gameScreen.afterGame(score);
                 }
             } else {
+                // continue
                 if (isKeyPressed(KeyCode.ENTER)) {
                     waitingForInteraction = false;
                     gameScreen.displayInfo("");
                 }
             }
-            
             return;
         }
-        
+        // end round if there are no asteroids left
         if (asteroids.isEmpty()) {
             handleRoundEnd();
             return;
         }
-
-        if (shipInvulnerable == 0 && isKeyPressed(KeyCode.SPACE)) {
-            if (player.fire()) {
-                // spawn projectile
-                spawnProjectile();
-            }
-        }
-
-        // update player position
-        isKeyPressed(KeyCode.LEFT, () -> player.move(new Point2D(-10, 0)));
-        isKeyPressed(KeyCode.RIGHT, () -> player.move(new Point2D(10, 0)));
-        // update player position
-        isKeyPressed(KeyCode.UP, () -> player.move(new Point2D(0, -10)));
-        isKeyPressed(KeyCode.DOWN, () -> player.move(new Point2D(0, 10)));
-
-        // don't rotate twice from keyboard and mouse
-        boolean rotationHandled = false;
-        if (isKeyPressed(KeyCode.D, () -> player.rotate(4))) {
-            rotationHandled = true;
-        } else if (isKeyPressed(KeyCode.A, () -> player.rotate(-4))) {
-            rotationHandled = true;
-        }
-
-//        if (!rotationHandled && isMouseButtonPressed()) {
-//            rotateShipToCursor(getLastMousePressedEvent());
-//        }
-
-        if (!isKeyPressed(KeyCode.W)) {
-            player.setEnginesOn(false);
-        } else {
-            player.setEnginesOn(true);
-        }
-
+        // handle controls
+        handleShipControls();
+        // update objects
         player.update();
+        updateAsteroids();
+        updateProjectiles();
         shipInvulnerable = Math.max(0, shipInvulnerable - 1);
-
+        // flash the ship and the lives during invulnerability
         if (shipInvulnerable > 0) {
             if ((shipInvulnerable / 20) % 2 == 0) {
                 player.getShape().setVisible(true);
@@ -127,9 +115,6 @@ public class DemoGame extends Game {
                 gameScreen.displayLives(0);
             }
         }
-        
-        updateAsteroids();
-        updateProjectiles();
         // update game screen
         gameScreen.displayScore(score);
     } // update
@@ -156,11 +141,13 @@ public class DemoGame extends Game {
                     Bounds objectBounds = asteroid.getShape().getBoundsInParent();
                     double cx = objectBounds.getCenterX();
                     double cy = objectBounds.getCenterY();
-                    for (Asteroid aa : newAsteroids) {
-                        aa.move(new Point2D(cx, cy));
-                        aa.move(new Point2D(rnd.nextDouble(10) - 5,
+                    for (Asteroid newAsteroid : newAsteroids) {
+                        // move it to the position of the destroyed asteroid
+                        newAsteroid.move(new Point2D(cx, cy));
+                        // move it a bit to a random direction
+                        newAsteroid.move(new Point2D(rnd.nextDouble(10) - 5,
                                 rnd.nextDouble(10) - 5));
-                        aa.randomizeMovement();
+                        newAsteroid.randomizeMovement();
                     }
                     // projectile will disappear in the next update
                     p.setTimeLeft(0);
@@ -204,6 +191,36 @@ public class DemoGame extends Game {
     }
 
     /**
+     * Handles ship control events.
+     */
+    private void handleShipControls() {
+        // fire weapon if the ship is not invulnerable
+        if (shipInvulnerable == 0 && isKeyPressed(KeyCode.SPACE)) {
+            if (player.fire()) {
+                spawnProjectile();
+            }
+        }
+        // don't rotate twice from keyboard and mouse
+        boolean rotationHandled = false;
+        // rotate from keys
+        if (isKeyPressed(KeyCode.D, () -> player.rotate(4.0))) {
+            rotationHandled = true;
+        } else if (isKeyPressed(KeyCode.A, () -> player.rotate(-4.0))) {
+            rotationHandled = true;
+        }
+        // rotate from moouse event
+        if (!rotationHandled && isMouseButtonPressed()) {
+            rotateShipToCursor(getLastMousePressedEvent());
+        }
+        // apply thrust
+        if (!isKeyPressed(KeyCode.W)) {
+            player.setEnginesOn(false);
+        } else {
+            player.setEnginesOn(true);
+        }
+    }
+
+    /**
      * Handles player collision.
      */
     private void handlePlayerCollision() {
@@ -221,12 +238,6 @@ public class DemoGame extends Game {
                 gameScreen.displayInfo("PRESS ENTER\nTO EXIT GAME");
             }
         }
-    }
-    
-    private void handleGameEnd() {
-        stop();
-        gameScreen.afterGame(score);
-        // TODO
     }
 
     /**
@@ -250,7 +261,7 @@ public class DemoGame extends Game {
             throw new IllegalStateException("unhandled enum type");
         }
     }
-    
+
     /**
      * Handle the end of a round.
      */
@@ -288,7 +299,7 @@ public class DemoGame extends Game {
         double scx = shipBounds.getCenterX();
         double scy = shipBounds.getCenterY();
         // create a projectile with ~2s display time
-        Projectile p = new Projectile(DemoGame.this, 120);
+        Projectile p = new Projectile(AsteroidsGame.this, 120);
         // get the central coordinates of the projectile
         Bounds pBounds = p.getShape().getBoundsInParent();
         double pcx = pBounds.getCenterX();
@@ -332,71 +343,13 @@ public class DemoGame extends Game {
         }
     }
 
-//    /**
-//     * Rotates the ship towards the mouse cursor.
-//     * 
-//     * @param event associated mouse event
-//     */
-//    private void rotateShipToCursor(MouseEvent event) {
-//
-//        // logger.info(event.toString());
-//        Bounds playerBounds = player.getShape().getBoundsInParent();
-//        Point2D click = new Point2D(event.getX(), event.getY());
-//
-//        double angle = getAngle(
-//                new Point2D(playerBounds.getCenterX(), playerBounds.getCenterY()), click);
-//        double oldDir = player.getDirectionInDegrees();
-//
-//        if (angle < 0 && oldDir < 0) {
-//            if (angle < oldDir) { // left
-//                player.rotate(Math.max(angle, oldDir - 5));
-//            } else { // right
-//                player.rotate(Math.min(angle, oldDir + 5));
-//            }
-//        } else if (angle < 0 && oldDir >= 0) {
-//            if (angle + 180 > oldDir) { // left
-//                double tmpDir = oldDir - 5;
-//                if (tmpDir < angle) {
-//                    player.rotate(angle);
-//                }
-//            } else { // right
-//                double tmpDir = oldDir + 5;
-//                if (tmpDir > 180) {
-//                    player.rotate(tmpDir - 360);
-//                }
-//            }
-//        } else if (angle >= 0 && oldDir >= 0) {
-//            if (angle < oldDir) { // left
-//                player.rotate(Math.max(angle, oldDir - 5));
-//            } else { // right
-//                player.rotate(Math.min(angle, oldDir + 5));
-//            }
-//        } else if (angle >= 0 && oldDir < 0) {
-//            if (angle - 180 > oldDir) { // left
-//                double tmpDir = oldDir - 5;
-//                if (tmpDir < -180) {
-//                    player.rotate(tmpDir + 360);
-//                }
-//            } else { // right
-//                double tmpDir = oldDir - 5;
-//                if (tmpDir > angle) {
-//                    player.rotate(angle);
-//                }
-//            }
-//        }
-//
-//        double newDir = player.getDirectionInDegrees();
-//        if (Math.abs(oldDir - newDir) > 5) {
-//            System.out.println(angle + " " + oldDir + " " + newDir);
-//        }
-//        System.out.println(angle + " " + oldDir + " " + newDir);
-//
-//    }
-
-    private double getAngle(Point2D p1, Point2D p2) {
-        double theta = Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());
-        double angle = Math.toDegrees(theta);
-        return angle;
+    /**
+     * Rotates the ship towards the mouse cursor.
+     * 
+     * @param event associated mouse event
+     */
+    private void rotateShipToCursor(MouseEvent event) {
+        Point2D click = new Point2D(event.getX(), event.getY());
+        player.rotateToPoint(click, 4.0);
     }
-
-} // DemoGame
+}
