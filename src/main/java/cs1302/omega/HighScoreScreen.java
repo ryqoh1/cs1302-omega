@@ -37,20 +37,20 @@ import javafx.util.converter.DefaultStringConverter;
  */
 public class HighScoreScreen {
 
-    /** File that stores the current records */
+    /** File that stores the current records. */
     private static Path HIGHSCORES_FILE = Path.of("resources/highscores");
-    /** File that stores the factory default records */
+    /** File that stores the factory default records. */
     private static Path DEFAULT_HIGHSCORES_FILE = Path.of("resources/highscores_default");
     private static Background BLACK = new Background(
             new BackgroundFill(Color.BLACK, null, null));
 
-    /** The main scene of this screen */
+    /** The main scene of this screen. */
     private Scene scene;
-    /** The high scores data */
+    /** The high scores data. */
     private List<Record> highScores;
-    /** The high scores table */
+    /** The high scores table. */
     private TableView<Record> table;
-    /** The editable(newly added) row's index */
+    /** The editable(newly added) row's index. */
     private int editIndex;
 
     /**
