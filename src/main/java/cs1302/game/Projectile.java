@@ -10,7 +10,7 @@ import javafx.scene.shape.Rectangle;
  */
 public class Projectile extends AnimatedObject {
 
-    /** Time left from display time */
+    /** Time left from display time. */
     private int timeLeft;
 
     /**

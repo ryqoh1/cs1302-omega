@@ -9,20 +9,20 @@ import javafx.scene.shape.Polygon;
  */
 public class Ship extends AnimatedObject {
 
-    /** Ship with engines on */
+    /** Ship with engines on. */
     private static final ImagePattern SHIP_ON = new ImagePattern(
             new Image("file:resources/game/ship_r_on.png"));
-    /** Ship with engines off */
+    /** Ship with engines off. */
     private static final ImagePattern SHIP_OFF = new ImagePattern(
             new Image("file:resources/game/ship_r.png"));
 
     private static final int DEFAULT_WEAPON_COOLDOWN = 60;
 
-    /** Whether the engines are on or not */
+    /** Whether the engines are on or not. */
     private boolean enginesOn;
-    /** Cooldown remaining until the weapon can be fired */
+    /** Cooldown remaining until the weapon can be fired. */
     private int cooldownRemaining;
-    /** The weapon cooldown */
+    /** The weapon cooldown. */
     private int weaponCooldown;
 
     /**

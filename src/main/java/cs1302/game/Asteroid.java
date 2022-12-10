@@ -21,13 +21,13 @@ public class Asteroid extends AnimatedObject {
      */
     public static enum AsteroidType {
         SMALL, MEDIUM, LARGE
-    };
+    }
 
     private static final Image IMAGE = new Image(
             "file:resources/game/Generic_Celestia_asteroid_texture.jpg");
     private static final PixelReader READER = IMAGE.getPixelReader();
 
-    /** The type of this asteroid */
+    /** The type of this asteroid. */
     private final AsteroidType type;
 
     /**
