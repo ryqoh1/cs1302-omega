@@ -134,7 +134,8 @@ public abstract class Game extends Region {
     } // handleMouseReleased
 
     /**
-     * Returns the last mouse press event, or {@code null} if no mouse  
+     * Returns the last mouse press event, or {@code null} if no mouse 
+     * button is being pressed.
      * 
      * @return the last mouse event
      */

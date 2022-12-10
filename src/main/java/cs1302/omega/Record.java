@@ -8,11 +8,11 @@ import java.time.LocalDate;
  * 
  */
 public class Record {
-    /** The score */
+    /** The score. */
     private int score;
-    /** The name */
+    /** The name. */
     private String name;
-    /** The date */
+    /** The date. */
     private LocalDate date;
 
     /**

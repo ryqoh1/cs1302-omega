@@ -29,22 +29,22 @@ public abstract class AnimatedObject {
     public static final double DEFAULT_MAX_SPEED = 50;
     public static final double DEFAULT_WRAP_PERCENT = 50;
 
-    /** The game containing this object */
+    /** The game containing this object. */
     protected final Game game;
-    /** The shape used to display this object */
+    /** The shape used to display this object. */
     protected Shape shape;
 
-    /** Movement applied at every update */
+    /** Movement applied at every update. */
     protected Point2D velocity;
-    /** Spin applied at every update */
+    /** Spin applied at every update. */
     protected double spin;
-    /** Movement applied once, at the next update */
+    /** Movement applied once, at the next update. */
     protected Point2D movement;
-    /** Spin applied once, at the next update */
+    /** Spin applied once, at the next update. */
     protected double rotate;
-    /** The direction this object is facing, in degrees */
+    /** The direction this object is facing, in degrees. */
     protected double direction;
-    /** The maximum magnitude of the velocity */
+    /** The maximum magnitude of the velocity. */
     private double maxSpeed;
     /**
      * In percentage. Objects should be wrapped around if they are out of the screen

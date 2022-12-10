@@ -23,9 +23,9 @@ import javafx.stage.Stage;
  */
 public class OmegaApp extends Application {
 
-    /** The default scene width of the app */
+    /** The default scene width of the app. */
     public static final int SCENE_WIDTH = 620;
-    /** The default scene height of the app */
+    /** The default scene height of the app. */
     public static final int SCENE_HEIGHT = 680;
 
     // fonts to be used in the app
@@ -34,13 +34,13 @@ public class OmegaApp extends Application {
     public static final Font F18 = Font.font("C059", FontWeight.NORMAL, 18);
     public static final Font F14 = Font.font("C059", FontWeight.NORMAL, 14);
 
-    /** The main scene of the main menu screen */
+    /** The main scene of the main menu screen. */
     Scene mainMenu;
-    /** The main window of the app */
+    /** The main window of the app. */
     Stage stage;
-    /** Highscore screen */
+    /** Highscore screen. */
     HighScoreScreen highScoreScreen;
-    /** Help screen */
+    /** Help screen. */
     HelpScreen helpScreen;
 
     /**

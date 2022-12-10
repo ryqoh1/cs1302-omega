@@ -32,24 +32,24 @@ import javafx.scene.text.TextAlignment;
  */
 public class GameScreen {
 
-    /** The allowed maximum number of lives */
+    /** The allowed maximum number of lives. */
     public static final int MAX_LIVES = 5;
-    /** The allowed maximum score */
+    /** The allowed maximum score. */
     public static final int MAX_SCORE = 9999999;
-    /** The height of the info area in pixels */
+    /** The height of the info area in pixels. */
     public static final int INFO_HEIGHT = 60;
 
-    /** The main scene of this screen*/
+    /** The main scene of this screen. */
     private Scene scene;
-    /** The game area*/
+    /** The game area. */
     private Game game;
-    /** The score*/
+    /** The score. */
     private Text score;
-    /** The info text*/
+    /** The info text. */
     private Text info;
-    /** Images representing the remaining lives*/
+    /** Images representing the remaining lives. */
     private List<ImageView> lives;
-    /** The app containing this screen*/
+    /** The app containing this screen. */
     private OmegaApp app;
 
     /**

@@ -21,10 +21,10 @@ import javafx.scene.text.Text;
  *  
  */
 public class HelpScreen {
-    /** File that stores the help content */
+    /** File that stores the help content. */
     private static Path HELP_FILE = Path.of("resources/help");
 
-    /** The main scene of this screen */
+    /** The main scene of this screen. */
     private Scene scene;
 
     /**

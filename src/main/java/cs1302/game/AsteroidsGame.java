@@ -18,23 +18,23 @@ import javafx.scene.input.MouseEvent;
  */
 public class AsteroidsGame extends Game {
 
-    /** Player's ship */
+    /** Player's ship. */
     private Ship player;
-    /** Asteroids */
+    /** Asteroids. */
     private List<Asteroid> asteroids = new ArrayList<>();
-    /** Projectiles */
+    /** Projectiles. */
     private List<Projectile> projectiles = new ArrayList<>();
-    /** Random number generator */
+    /** Random number generator. */
     private Random rnd = new Random();
-    /** Game score */
+    /** Game score. */
     private int score = 0;
-    /** Lives */
+    /** Lives. */
     private int lives = 3;
-    /** Whether the game is paused, waiting for user interaction */
+    /** Whether the game is paused, waiting for user interaction. */
     private boolean waitingForInteraction;
-    /** Time left from invulnerability */
+    /** Time left from invulnerability. */
     private int shipInvulnerable;
-    /** GameScreen containing this game */
+    /** GameScreen containing this game. */
     private GameScreen gameScreen;
 
     /**
