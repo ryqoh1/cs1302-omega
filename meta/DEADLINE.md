@@ -7,24 +7,29 @@ Markdown is transformed into nice looking HTML.
 
 ## Part 1: App Description
 
-> Please provide a firendly description of your app, including the app
-> category that you chose, and the primary functions available to users
-> of the app.
+> This app is based on the Asteroid game using JavaFx. Users can check high scores
+> and as well as starting a new game. The objective of the game is to shoot down
+> as many asteroid as possible before during the three lives.
 
-> **Also, include the GitHub `https` URL to your repository.**
+> https://github.com/ryqoh1/cs1302-omega.git
 
-TODO WRITE / REPLACE
+
 
 ## Part 2: New
 
 > What is something new and/or exciting that you learned from working
 > on this project?
 
-TODO WRITE / REPLACE
+> I think working on this project give me a wider perspective on object orientated
+> programming because from scratch, you can build up to an amazing product.
+> The possibility are endless as there are so many database, resources, and example
+> out there.
 
 ## Part 3: Retrospect
 
 > If you could start the project over from scratch, what do
 > you think might do differently and why?
 
-TODO WRITE / REPLACE
+> If I were to start the project over from scartch, I think I would
+> try the API version, because while creating a game is fun, I would
+> want to make a product that is impactful and can be use on a daily basis.
